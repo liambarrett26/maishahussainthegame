@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprite Preview - Maisha's Adventure</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 40px;
+            text-align: center;
+        }
+        h1 { color: #ff6b6b; margin-bottom: 10px; }
+        h2 { color: #feca57; margin-top: 40px; }
+        .subtitle { color: #888; margin-bottom: 40px; }
+        .sprite-container {
+            background: #2d2d44;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 600px;
+            border: 2px solid #444;
+        }
+        img {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            background: repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 50% / 16px 16px;
+            border: 2px solid #555;
+            margin: 10px;
+        }
+        .scale-8x { transform: scale(8); transform-origin: top left; margin-bottom: 200px; }
+        .info {
+            background: #1a1a3a;
+            border-left: 4px solid #ff6b6b;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 500px;
+            text-align: left;
+            border-radius: 0 8px 8px 0;
+        }
+        code {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Sprite Assets Preview</h1>
+    <p class="subtitle">Generated assets for Maisha's Adventure</p>
+
+    <h2>Maisha (maisha.png)</h2>
+    <div class="sprite-container">
+        <img src="sprites/maisha.png" alt="Maisha spritesheet" style="width: 256px; height: 96px;">
+        <p>256×96px · 19 frames · Animations: idle(4), run(6), jump(3), hurt(2), victory(4)</p>
+    </div>
+
+    <h2>Mayo Jar (mayo.png)</h2>
+    <div class="sprite-container">
+        <img src="sprites/mayo.png" alt="Mayo jar spritesheet" style="width: 128px; height: 32px;">
+        <p>128×32px · 4 frames · Bobbing animation with sparkle</p>
+    </div>
+
+    <h2>Wasp (wasp.png)</h2>
+    <div class="sprite-container">
+        <img src="sprites/wasp.png" alt="Wasp spritesheet" style="width: 64px; height: 32px;">
+        <p>64×32px · 2 frames · Wing flap animation</p>
+    </div>
+
+    <div class="info">
+        <h3>📁 Files to add to your project:</h3>
+        <p>Place these in <code>public/assets/sprites/</code></p>
+        <ul>
+            <li><code>maisha.png</code> + <code>maisha.json</code></li>
+            <li><code>mayo.png</code> + <code>mayo.json</code></li>
+            <li><code>wasp.png</code> + <code>wasp.json</code></li>
+        </ul>
+    </div>
+</body>
+</html>
