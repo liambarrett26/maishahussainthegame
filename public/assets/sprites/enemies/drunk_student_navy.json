@@ -1,0 +1,355 @@
+{
+  "textures": [
+    {
+      "image": "drunk_student_navy.png",
+      "format": "RGBA8888",
+      "size": {
+        "w": 256,
+        "h": 64
+      },
+      "scale": 1,
+      "frames": [
+        {
+          "filename": "stumble_0",
+          "frame": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "stumble_1",
+          "frame": {
+            "x": 32,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "stumble_2",
+          "frame": {
+            "x": 64,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "stumble_3",
+          "frame": {
+            "x": 96,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "bash_0",
+          "frame": {
+            "x": 128,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "bash_1",
+          "frame": {
+            "x": 160,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "bash_2",
+          "frame": {
+            "x": 192,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "bash_3",
+          "frame": {
+            "x": 224,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "vomit_0",
+          "frame": {
+            "x": 0,
+            "y": 32,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "vomit_1",
+          "frame": {
+            "x": 32,
+            "y": 32,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "vomit_2",
+          "frame": {
+            "x": 64,
+            "y": 32,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "vomit_3",
+          "frame": {
+            "x": 96,
+            "y": 32,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "hit_0",
+          "frame": {
+            "x": 128,
+            "y": 32,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "hit_1",
+          "frame": {
+            "x": 160,
+            "y": 32,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "hit_2",
+          "frame": {
+            "x": 192,
+            "y": 32,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        },
+        {
+          "filename": "hit_3",
+          "frame": {
+            "x": 224,
+            "y": 32,
+            "w": 32,
+            "h": 32
+          },
+          "rotated": false,
+          "trimmed": false,
+          "spriteSourceSize": {
+            "x": 0,
+            "y": 0,
+            "w": 32,
+            "h": 32
+          },
+          "sourceSize": {
+            "w": 32,
+            "h": 32
+          }
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "app": "Maisha's Adventure - Drunk Student Generator",
+    "version": "1.0"
+  }
+}

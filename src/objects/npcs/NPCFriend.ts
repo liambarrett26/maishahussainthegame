@@ -7,16 +7,17 @@ export interface NPCFriendConfig {
 }
 
 // NPC Friend data
-export const NPC_FRIENDS: Record<string, { name: string; spriteKey: string; level: string; isAdvisor?: boolean; advice?: string }> = {
+// skipLevels: levels where this friend should NOT appear as a follower (went to different uni, etc.)
+export const NPC_FRIENDS: Record<string, { name: string; spriteKey: string; level: string; isAdvisor?: boolean; advice?: string; skipLevels?: string[] }> = {
   liam: { name: 'Liam', spriteKey: 'liam', level: 'varndean' },
-  beth_twine: { name: 'Beth Twine', spriteKey: 'beth_twine', level: 'varndean' },
-  eliza: { name: 'Eliza', spriteKey: 'eliza', level: 'varndean' },
+  beth_twine: { name: 'Beth', spriteKey: 'beth_twine', level: 'varndean', skipLevels: ['ucl'] }, // Went to different uni
+  eliza: { name: 'Eliza', spriteKey: 'eliza', level: 'varndean', skipLevels: ['ucl'] }, // Went to different uni
   sean: {
     name: 'Sean',
     spriteKey: 'sean',
-    level: 'varndean',
+    level: 'brighton',
     isAdvisor: true,
-    advice: "The key to chemistry is understanding that everything wants to be stable. Balance your reactions, and you'll balance anything!"
+    advice: "Hey Maisha! You should take the bus to Varndean College and do the IB - it'll change your life! Trust me on this one."
   },
   beth_levy: { name: 'Beth Levy', spriteKey: 'beth_levy', level: 'ucl' },
 };
@@ -72,7 +73,7 @@ export class NPCFriend extends Phaser.Physics.Arcade.Sprite {
     });
   }
 
-  collect(onComplete?: () => void): void {
+  collect(onComplete?: () => void, skipEffects: boolean = false): void {
     if (this.collected) return;
     this.collected = true;
 
@@ -80,6 +81,16 @@ export class NPCFriend extends Phaser.Physics.Arcade.Sprite {
     if (this.exclamationMark) {
       this.exclamationMark.destroy();
       this.exclamationMark = null;
+    }
+
+    // Skip effects for returning friends (already collected in previous levels)
+    if (skipEffects) {
+      this.isFollowing = true;
+      const body = this.body as Phaser.Physics.Arcade.Body;
+      body.enable = false;
+      this.play(`${this.texture.key}-idle`);
+      onComplete?.();
+      return;
     }
 
     // Play wave animation
@@ -97,15 +108,20 @@ export class NPCFriend extends Phaser.Physics.Arcade.Sprite {
     // Show name popup
     this.showNamePopup();
 
-    // After wave animation completes, start following
+    // After wave animation completes, start following (unless advisor)
     this.scene.time.delayedCall(1200, () => {
-      this.isFollowing = true;
+      const friendData = NPC_FRIENDS[this.friendId];
+      const isAdvisor = friendData?.isAdvisor;
+
+      // Advisors stay stationary - they don't follow
+      if (!isAdvisor) {
+        this.isFollowing = true;
+        // Disable physics collision for following
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        body.enable = false;
+      }
+
       this.play(`${this.texture.key}-idle`);
-
-      // Disable physics collision for following
-      const body = this.body as Phaser.Physics.Arcade.Body;
-      body.enable = false;
-
       onComplete?.();
     });
   }

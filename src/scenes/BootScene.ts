@@ -67,6 +67,18 @@ export class BootScene extends Phaser.Scene {
     this.load.atlas('wasp', 'assets/sprites/wasp.png', 'assets/sprites/wasp.json');
     // Note: seagull sprite will be created programmatically
 
+    // Enemy sprites
+    this.load.atlas('drunk_student_grey', 'assets/sprites/enemies/drunk_student_grey.png', 'assets/sprites/enemies/drunk_student_grey.json');
+    this.load.atlas('drunk_student_navy', 'assets/sprites/enemies/drunk_student_navy.png', 'assets/sprites/enemies/drunk_student_navy.json');
+    this.load.atlas('vomit_projectile', 'assets/sprites/enemies/vomit_projectile.png', 'assets/sprites/enemies/vomit_projectile.json');
+    this.load.atlas('vomit_puddle', 'assets/sprites/enemies/vomit_puddle.png', 'assets/sprites/enemies/vomit_puddle.json');
+
+    // Boss sprites
+    this.load.atlas('giant_wasp', 'assets/sprites/enemies/giant_wasp.png', 'assets/sprites/enemies/giant_wasp.json');
+    this.load.atlas('stinger_missile', 'assets/sprites/enemies/stinger_missile.png', 'assets/sprites/enemies/stinger_missile.json');
+    this.load.atlas('swarm_wasp', 'assets/sprites/enemies/swarm_wasp.png', 'assets/sprites/enemies/swarm_wasp.json');
+    this.load.image('number_10_door', 'assets/sprites/enemies/number_10_door.png');
+
     // NPC friend sprites
     this.load.atlas('liam', 'assets/sprites/npcs/liam.png', 'assets/sprites/npcs/liam.json');
     this.load.atlas('beth_twine', 'assets/sprites/npcs/beth_twine.png', 'assets/sprites/npcs/beth_twine.json');
@@ -83,6 +95,7 @@ export class BootScene extends Phaser.Scene {
     this.createSeagullSprite();
     this.createBatSprite();
     this.createMaishaFightingSprite();
+    this.createMayoProjectileSprite();
 
     // Only create programmatic Sean/Nicki if loading failed
     if (!this.textures.exists('sean')) {
@@ -425,6 +438,211 @@ export class BootScene extends Phaser.Scene {
       repeat: 0,
     });
 
+    // Drunk student animations (grey hoodie variant)
+    this.anims.create({
+      key: 'drunk-grey-stumble',
+      frames: this.anims.generateFrameNames('drunk_student_grey', {
+        prefix: 'stumble_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 6,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'drunk-grey-bash',
+      frames: this.anims.generateFrameNames('drunk_student_grey', {
+        prefix: 'bash_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'drunk-grey-vomit',
+      frames: this.anims.generateFrameNames('drunk_student_grey', {
+        prefix: 'vomit_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 8,
+      repeat: 0,
+    });
+
+    this.anims.create({
+      key: 'drunk-grey-hit',
+      frames: this.anims.generateFrameNames('drunk_student_grey', {
+        prefix: 'hit_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 10,
+      repeat: 0,
+    });
+
+    // Drunk student animations (navy hoodie variant)
+    this.anims.create({
+      key: 'drunk-navy-stumble',
+      frames: this.anims.generateFrameNames('drunk_student_navy', {
+        prefix: 'stumble_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 6,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'drunk-navy-bash',
+      frames: this.anims.generateFrameNames('drunk_student_navy', {
+        prefix: 'bash_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'drunk-navy-vomit',
+      frames: this.anims.generateFrameNames('drunk_student_navy', {
+        prefix: 'vomit_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 8,
+      repeat: 0,
+    });
+
+    this.anims.create({
+      key: 'drunk-navy-hit',
+      frames: this.anims.generateFrameNames('drunk_student_navy', {
+        prefix: 'hit_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 10,
+      repeat: 0,
+    });
+
+    // Vomit projectile animation
+    this.anims.create({
+      key: 'vomit-arc',
+      frames: this.anims.generateFrameNames('vomit_projectile', {
+        prefix: 'arc_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 10,
+      repeat: -1,
+    });
+
+    // Giant Wasp Boss animations
+    this.anims.create({
+      key: 'giant-wasp-idle',
+      frames: this.anims.generateFrameNames('giant_wasp', {
+        prefix: 'idle_',
+        start: 0,
+        end: 7,
+      }),
+      frameRate: 12,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'giant-wasp-attack',
+      frames: this.anims.generateFrameNames('giant_wasp', {
+        prefix: 'attack_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 10,
+      repeat: 0,
+    });
+
+    this.anims.create({
+      key: 'giant-wasp-hurt',
+      frames: this.anims.generateFrameNames('giant_wasp', {
+        prefix: 'hurt_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 10,
+      repeat: 0,
+    });
+
+    this.anims.create({
+      key: 'giant-wasp-rage',
+      frames: this.anims.generateFrameNames('giant_wasp', {
+        prefix: 'rage_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 14, // Faster in rage mode
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'giant-wasp-defeat',
+      frames: this.anims.generateFrameNames('giant_wasp', {
+        prefix: 'defeat_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 6,
+      repeat: 0,
+    });
+
+    // Stinger missile animation
+    this.anims.create({
+      key: 'stinger-fly',
+      frames: this.anims.generateFrameNames('stinger_missile', {
+        prefix: 'fly_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 12,
+      repeat: -1,
+    });
+
+    // Swarm wasp animation
+    this.anims.create({
+      key: 'swarm-wasp-fly',
+      frames: this.anims.generateFrameNames('swarm_wasp', {
+        prefix: 'fly_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 16, // Fast flapping
+      repeat: -1,
+    });
+
+    // Mayo projectile animations
+    this.anims.create({
+      key: 'mayo-projectile-fly',
+      frames: this.anims.generateFrameNames('mayo_projectile', {
+        prefix: 'fly_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 12,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: 'mayo-projectile-splat',
+      frames: this.anims.generateFrameNames('mayo_projectile', {
+        prefix: 'splat_',
+        start: 0,
+        end: 3,
+      }),
+      frameRate: 16,
+      repeat: 0,
+    });
+
     // NPC friend animations
     this.createNPCAnimations();
   }
@@ -711,6 +929,103 @@ export class BootScene extends Phaser.Scene {
     }
     for (let i = 0; i < 4; i++) {
       texture.add(`victory_${i}`, 0, (i + 4) * 64, 128, 64, 64);
+    }
+  }
+
+  private createMayoProjectileSprite(): void {
+    // Create mayo projectile texture (16x16 frames)
+    const canvas = document.createElement('canvas');
+    canvas.width = 128; // 8 frames
+    canvas.height = 16;
+    const ctx = canvas.getContext('2d')!;
+
+    // Frames 0-3: flying mayo glob
+    for (let i = 0; i < 4; i++) {
+      this.drawMayoGlobFrame(ctx, i * 16, 0, i, 'fly');
+    }
+
+    // Frames 4-7: splat animation
+    for (let i = 0; i < 4; i++) {
+      this.drawMayoGlobFrame(ctx, (i + 4) * 16, 0, i, 'splat');
+    }
+
+    this.textures.addCanvas('mayo_projectile', canvas);
+
+    const texture = this.textures.get('mayo_projectile');
+    for (let i = 0; i < 4; i++) {
+      texture.add(`fly_${i}`, 0, i * 16, 0, 16, 16);
+      texture.add(`splat_${i}`, 0, (i + 4) * 16, 0, 16, 16);
+    }
+  }
+
+  private drawMayoGlobFrame(ctx: CanvasRenderingContext2D, x: number, y: number, frame: number, type: string): void {
+    const centerX = x + 8;
+    const centerY = y + 8;
+
+    if (type === 'fly') {
+      // Spinning mayo glob
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate((frame * Math.PI) / 4);
+
+      // Main mayo blob (cream/white)
+      ctx.fillStyle = '#fff8dc';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 6 + frame % 2, 5 - frame % 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Darker outline
+      ctx.strokeStyle = '#f5deb3';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Highlight
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(-2, -2, 2, 1.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Small droplets trailing
+      ctx.fillStyle = '#fff8dc';
+      ctx.beginPath();
+      ctx.arc(-6, 2 + frame, 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    } else {
+      // Splat animation
+      const splatSize = 3 + frame * 2;
+      const alpha = 1 - frame * 0.2;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Central splat
+      ctx.fillStyle = '#fff8dc';
+      ctx.beginPath();
+      ctx.ellipse(centerX, centerY, splatSize, splatSize * 0.6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Splatter droplets
+      for (let d = 0; d < 6; d++) {
+        const angle = (d / 6) * Math.PI * 2;
+        const dist = splatSize + frame * 2;
+        const dropX = centerX + Math.cos(angle) * dist;
+        const dropY = centerY + Math.sin(angle) * dist * 0.6;
+
+        ctx.beginPath();
+        ctx.arc(dropX, dropY, 2 - frame * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Highlight on splat
+      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = alpha * 0.7;
+      ctx.beginPath();
+      ctx.ellipse(centerX - 2, centerY - 1, splatSize * 0.4, splatSize * 0.3, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
     }
   }
 

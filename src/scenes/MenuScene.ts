@@ -513,7 +513,9 @@ export class MenuScene extends Phaser.Scene {
       { id: LEVELS.WORTHING, name: 'Worthing Beach', color: 0x3498db },
       { id: LEVELS.BRIGHTON, name: 'Brighton', color: 0x9b59b6 },
       { id: LEVELS.VARNDEAN, name: 'Varndean College', color: 0x27ae60 },
-      { id: 'boss', name: 'Boss Battle', color: 0xe74c3c },
+      { id: LEVELS.UCL, name: 'UCL University', color: 0x500778 },
+      { id: LEVELS.CIVIL_SERVICE, name: 'Civil Service', color: 0x708090 },
+      { id: 'exam', name: 'IB Exams', color: 0x1a1a8c },
     ];
 
     levels.forEach((level, index) => {
@@ -557,11 +559,11 @@ export class MenuScene extends Phaser.Scene {
       });
 
       zone.on('pointerdown', () => {
-        if (level.id === 'boss') {
-          // Go directly to boss battle
+        if (level.id === 'exam') {
+          // Go directly to IB exams
           this.cameras.main.fadeOut(300, 0, 0, 0);
           this.cameras.main.once('camerafadeoutcomplete', () => {
-            this.scene.start(SCENES.BOSS_BATTLE);
+            this.scene.start(SCENES.EXAM);
           });
         } else {
           // Save level and start game

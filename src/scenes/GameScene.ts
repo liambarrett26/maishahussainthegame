@@ -8,7 +8,11 @@ import { Checkpoint } from '../objects/collectibles/Checkpoint';
 import { Bat } from '../objects/collectibles/Bat';
 import { Wasp } from '../objects/enemies/Wasp';
 import { Seagull } from '../objects/enemies/Seagull';
+import { DrunkStudent } from '../objects/enemies/DrunkStudent';
+import { Bureaucrat } from '../objects/enemies/Bureaucrat';
+import { GiantWasp } from '../objects/enemies/GiantWasp';
 import { NPCFriend, NPC_FRIENDS } from '../objects/npcs/NPCFriend';
+import { MayoBlaster, MayoBlasterPickup } from '../objects/weapons/MayoBlaster';
 import { LevelData, LEVEL_DATA, PlatformConfig } from './levels/LevelConfig';
 
 interface MovingPlatformData {
@@ -31,6 +35,13 @@ export class GameScene extends Phaser.Scene {
   private bats: Bat[] = [];
   private wasps: Wasp[] = [];
   private seagulls: Seagull[] = [];
+  private drunkStudents: DrunkStudent[] = [];
+  private bureaucrats: Bureaucrat[] = [];
+  private boss: GiantWasp | null = null;
+  private bossDefeated: boolean = false;
+  private mayoBlaster: MayoBlaster | null = null;
+  private mayoBlasterPickup: MayoBlasterPickup | null = null;
+  private fireKey!: Phaser.Input.Keyboard.Key;
   private checkpoints: Checkpoint[] = [];
   private friends: NPCFriend[] = [];
   private followingFriends: NPCFriend[] = [];
@@ -51,10 +62,16 @@ export class GameScene extends Phaser.Scene {
     this.bats = [];
     this.wasps = [];
     this.seagulls = [];
+    this.drunkStudents = [];
+    this.bureaucrats = [];
     this.checkpoints = [];
     this.friends = [];
     this.followingFriends = [];
     this.movingPlatformData = [];
+    this.boss = null;
+    this.bossDefeated = false;
+    this.mayoBlaster = null;
+    this.mayoBlasterPickup = null;
   }
 
   create(): void {
@@ -87,6 +104,15 @@ export class GameScene extends Phaser.Scene {
       this.createLibrary();
       this.createPlayingField();
       this.createSchoolExit();
+    } else if (this.currentLevel.id === LEVELS.UCL) {
+      this.createConnaughtHall();
+      this.createUCLPortico();
+      this.createLondonLandmarks();
+      this.createGraduationStage();
+    } else if (this.currentLevel.id === LEVELS.CIVIL_SERVICE) {
+      this.createWhitehallOffice();
+      this.createDowningStreet();
+      this.createCareerSuccessStage();
     }
 
     this.createMayoJars();
@@ -95,6 +121,9 @@ export class GameScene extends Phaser.Scene {
     this.createCheckpoints();
     this.createWasps();
     this.createSeagulls();
+    this.createDrunkStudents();
+    this.createBureaucrats();
+    this.createBossArena();
 
     // Create player
     const spawnPoint = this.getSpawnPoint();
@@ -112,6 +141,9 @@ export class GameScene extends Phaser.Scene {
     this.followingFriends.forEach((friend, index) => {
       friend.setFollowTarget(this.player, index);
     });
+
+    // Set player as target for enemies that need to track/attack player
+    this.setEnemyTargets();
 
     // Play level-specific intro
     if (!saveData.checkpointId) {
@@ -685,15 +717,417 @@ export class GameScene extends Phaser.Scene {
 
     exit.setDepth(1);
 
-    // Exit sign
-    const exitSign = this.add.text(baseX + 25, baseY - 85, 'EXIT', {
-      fontSize: '10px',
-      color: '#27ae60',
+    // Exam hall sign
+    const exitSign = this.add.text(baseX + 25, baseY - 85, 'EXAM HALL', {
+      fontSize: '8px',
+      color: '#1a1a8c',
       fontFamily: 'monospace',
       fontStyle: 'bold',
     });
     exitSign.setOrigin(0.5);
     exitSign.setDepth(2);
+  }
+
+  private createConnaughtHall(): void {
+    const baseX = 20;
+    const baseY = 238;
+
+    const hall = this.add.graphics();
+
+    // Main building (Georgian style brick)
+    hall.fillStyle(0x8b4513, 1);
+    hall.fillRect(baseX, baseY - 100, 200, 100);
+
+    // White trim/cornices
+    hall.fillStyle(0xf5f5f5, 1);
+    hall.fillRect(baseX, baseY - 105, 200, 8);
+    hall.fillRect(baseX, baseY - 60, 200, 3);
+
+    // Windows (Georgian sash style)
+    hall.fillStyle(0x87ceeb, 1);
+    for (let row = 0; row < 2; row++) {
+      for (let col = 0; col < 5; col++) {
+        hall.fillRect(baseX + 15 + col * 38, baseY - 95 + row * 40, 25, 30);
+        // Window panes
+        hall.lineStyle(2, 0xffffff);
+        hall.strokeRect(baseX + 15 + col * 38, baseY - 95 + row * 40, 25, 30);
+        hall.lineBetween(baseX + 27 + col * 38, baseY - 95 + row * 40, baseX + 27 + col * 38, baseY - 65 + row * 40);
+      }
+    }
+
+    // Main entrance
+    hall.fillStyle(0x2c3e50, 1);
+    hall.fillRect(baseX + 80, baseY - 50, 40, 50);
+    // Door frame
+    hall.fillStyle(0xf5f5f5, 1);
+    hall.fillRect(baseX + 75, baseY - 55, 50, 5);
+
+    hall.setDepth(-10); // Behind player and other objects
+
+    // Sign
+    const signText = this.add.text(baseX + 100, baseY - 110, 'CONNAUGHT HALL', {
+      fontSize: '6px',
+      color: '#1a1a8c',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+    });
+    signText.setOrigin(0.5);
+    signText.setDepth(-9); // Behind player
+  }
+
+  private createUCLPortico(): void {
+    const baseX = 1350;
+    const baseY = 238;
+
+    const portico = this.add.graphics();
+
+    // Main building background
+    portico.fillStyle(0xf5f5dc, 1);
+    portico.fillRect(baseX - 50, baseY - 120, 400, 120);
+
+    // Triangular pediment
+    portico.fillStyle(0xd4c4a8, 1);
+    portico.fillTriangle(baseX + 50, baseY - 130, baseX + 250, baseY - 130, baseX + 150, baseY - 170);
+
+    // Columns (6 Corinthian-style)
+    portico.fillStyle(0xf5f5f5, 1);
+    for (let i = 0; i < 6; i++) {
+      const colX = baseX + 20 + i * 55;
+      // Column shaft
+      portico.fillRect(colX, baseY - 120, 15, 100);
+      // Capital (simplified)
+      portico.fillRect(colX - 3, baseY - 125, 21, 8);
+      // Base
+      portico.fillRect(colX - 2, baseY - 22, 19, 5);
+    }
+
+    // Entablature
+    portico.fillStyle(0xe8e8e8, 1);
+    portico.fillRect(baseX - 30, baseY - 130, 360, 10);
+
+    // Dome (simplified)
+    portico.fillStyle(0x708090, 1);
+    portico.beginPath();
+    portico.arc(baseX + 150, baseY - 160, 30, Math.PI, 0);
+    portico.fillPath();
+
+    portico.setDepth(-10); // Behind player and other objects
+
+    // UCL sign
+    const uclText = this.add.text(baseX + 150, baseY - 145, 'UCL', {
+      fontSize: '12px',
+      color: '#1a1a8c',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+    });
+    uclText.setOrigin(0.5);
+    uclText.setDepth(-9); // Behind player
+
+    // "University College London" subtitle
+    const subText = this.add.text(baseX + 150, baseY - 135, 'University College London', {
+      fontSize: '5px',
+      color: '#333333',
+      fontFamily: 'monospace',
+    });
+    subText.setOrigin(0.5);
+    subText.setDepth(-9); // Behind player
+  }
+
+  private createLondonLandmarks(): void {
+    const baseY = 238;
+
+    const landmarks = this.add.graphics();
+
+    // Big Ben / Elizabeth Tower (simplified)
+    const bigBenX = 2700;
+    landmarks.fillStyle(0xd4c4a8, 1);
+    landmarks.fillRect(bigBenX, baseY - 150, 40, 150);
+    // Clock face
+    landmarks.fillStyle(0xffffff, 1);
+    landmarks.fillCircle(bigBenX + 20, baseY - 120, 15);
+    landmarks.lineStyle(2, 0x333333);
+    landmarks.strokeCircle(bigBenX + 20, baseY - 120, 15);
+    // Clock hands
+    landmarks.lineBetween(bigBenX + 20, baseY - 120, bigBenX + 20, baseY - 130);
+    landmarks.lineBetween(bigBenX + 20, baseY - 120, bigBenX + 28, baseY - 120);
+    // Spire
+    landmarks.fillStyle(0x2c3e50, 1);
+    landmarks.fillTriangle(bigBenX + 5, baseY - 150, bigBenX + 35, baseY - 150, bigBenX + 20, baseY - 180);
+
+    // London Eye (simplified wheel)
+    const eyeX = 2950;
+    landmarks.lineStyle(3, 0xcccccc);
+    landmarks.strokeCircle(eyeX, baseY - 80, 60);
+    // Spokes
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      landmarks.lineBetween(
+        eyeX,
+        baseY - 80,
+        eyeX + Math.cos(angle) * 60,
+        baseY - 80 + Math.sin(angle) * 60
+      );
+    }
+    // Support structure
+    landmarks.lineStyle(4, 0x666666);
+    landmarks.lineBetween(eyeX, baseY, eyeX, baseY - 80);
+    landmarks.lineBetween(eyeX - 30, baseY, eyeX, baseY - 50);
+    landmarks.lineBetween(eyeX + 30, baseY, eyeX, baseY - 50);
+
+    // Red telephone box
+    const phoneX = 2600;
+    landmarks.fillStyle(0xe74c3c, 1);
+    landmarks.fillRect(phoneX, baseY - 45, 20, 45);
+    // Windows
+    landmarks.fillStyle(0x87ceeb, 0.5);
+    landmarks.fillRect(phoneX + 3, baseY - 40, 14, 25);
+    // Crown top
+    landmarks.fillStyle(0xe74c3c, 1);
+    landmarks.fillRect(phoneX - 2, baseY - 48, 24, 5);
+
+    // Red double-decker bus (decorative)
+    const busX = 2850;
+    landmarks.fillStyle(0xe74c3c, 1);
+    landmarks.fillRect(busX, baseY - 40, 60, 25);
+    landmarks.fillRect(busX + 5, baseY - 55, 50, 18);
+    // Windows
+    landmarks.fillStyle(0x87ceeb, 1);
+    for (let i = 0; i < 4; i++) {
+      landmarks.fillRect(busX + 8 + i * 12, baseY - 52, 8, 12);
+    }
+    // Wheels
+    landmarks.fillStyle(0x1a1a1a, 1);
+    landmarks.fillCircle(busX + 12, baseY - 15, 6);
+    landmarks.fillCircle(busX + 48, baseY - 15, 6);
+
+    landmarks.setDepth(-10); // Behind player and other objects
+
+    // "LONDON" text
+    const londonText = this.add.text(2800, baseY - 100, 'LONDON', {
+      fontSize: '8px',
+      color: '#1a1a8c',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+    });
+    londonText.setOrigin(0.5);
+    londonText.setDepth(-9); // Behind player
+  }
+
+  private createGraduationStage(): void {
+    const stageX = 3050;
+    const baseY = 238;
+
+    const stage = this.add.graphics();
+
+    // Graduation stage platform
+    stage.fillStyle(0x8b4513, 1);
+    stage.fillRect(stageX - 20, baseY - 15, 140, 15);
+
+    // Stage backdrop (UCL purple)
+    stage.fillStyle(0x500778, 1);
+    stage.fillRect(stageX, baseY - 100, 100, 85);
+
+    // UCL crest area
+    stage.fillStyle(0xffd700, 1);
+    stage.fillCircle(stageX + 50, baseY - 70, 20);
+
+    // Graduation banner
+    stage.fillStyle(0x1a1a8c, 1);
+    stage.fillRect(stageX + 10, baseY - 95, 80, 15);
+
+    // Podium
+    stage.fillStyle(0x654321, 1);
+    stage.fillRect(stageX + 35, baseY - 45, 30, 30);
+
+    // Decorative columns
+    stage.fillStyle(0xf5f5f5, 1);
+    stage.fillRect(stageX - 5, baseY - 90, 10, 75);
+    stage.fillRect(stageX + 95, baseY - 90, 10, 75);
+
+    stage.setDepth(-10); // Behind player
+
+    // "GRADUATION" text
+    const gradText = this.add.text(stageX + 50, baseY - 88, 'GRADUATION', {
+      fontSize: '6px',
+      color: '#ffffff',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+    });
+    gradText.setOrigin(0.5);
+    gradText.setDepth(-9);
+
+    // "Class of 2020" text
+    const classText = this.add.text(stageX + 50, baseY - 55, 'Class of 2020', {
+      fontSize: '5px',
+      color: '#ffd700',
+      fontFamily: 'monospace',
+    });
+    classText.setOrigin(0.5);
+    classText.setDepth(-9);
+  }
+
+  private createWhitehallOffice(): void {
+    const baseX = 50;
+    const baseY = 238;
+
+    const office = this.add.graphics();
+
+    // Main office building (grey stone)
+    office.fillStyle(0x808080, 1);
+    office.fillRect(baseX, baseY - 120, 250, 120);
+
+    // Windows (grid pattern)
+    office.fillStyle(0x87ceeb, 0.8);
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 6; col++) {
+        office.fillRect(baseX + 20 + col * 38, baseY - 110 + row * 35, 25, 25);
+      }
+    }
+
+    // Window frames
+    office.lineStyle(1, 0x333333);
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 6; col++) {
+        office.strokeRect(baseX + 20 + col * 38, baseY - 110 + row * 35, 25, 25);
+      }
+    }
+
+    // Main entrance (glass doors)
+    office.fillStyle(0x4a90d9, 0.6);
+    office.fillRect(baseX + 100, baseY - 50, 50, 50);
+    office.lineStyle(2, 0x333333);
+    office.strokeRect(baseX + 100, baseY - 50, 50, 50);
+    office.lineBetween(baseX + 125, baseY - 50, baseX + 125, baseY);
+
+    // Roof/cornice
+    office.fillStyle(0x696969, 1);
+    office.fillRect(baseX - 10, baseY - 125, 270, 8);
+
+    office.setDepth(-10);
+
+    // "HM GOVERNMENT" sign
+    const govText = this.add.text(baseX + 125, baseY - 130, 'HM GOVERNMENT', {
+      fontSize: '6px',
+      color: '#1a1a1a',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+    });
+    govText.setOrigin(0.5);
+    govText.setDepth(-9);
+  }
+
+  private createDowningStreet(): void {
+    const baseX = 2700;
+    const baseY = 238;
+
+    const downing = this.add.graphics();
+
+    // Number 10 Downing Street building
+    downing.fillStyle(0x1a1a1a, 1);
+    downing.fillRect(baseX, baseY - 100, 120, 100);
+
+    // Famous black door
+    downing.fillStyle(0x000000, 1);
+    downing.fillRect(baseX + 45, baseY - 70, 30, 70);
+
+    // White door frame
+    downing.lineStyle(3, 0xffffff);
+    downing.strokeRect(baseX + 45, baseY - 70, 30, 70);
+
+    // Semi-circular fanlight above door
+    downing.fillStyle(0xf5f5f5, 0.8);
+    downing.beginPath();
+    downing.arc(baseX + 60, baseY - 70, 15, Math.PI, 0);
+    downing.fillPath();
+
+    // Number "10"
+    const tenText = this.add.text(baseX + 60, baseY - 55, '10', {
+      fontSize: '10px',
+      color: '#ffffff',
+      fontFamily: 'serif',
+      fontStyle: 'bold',
+    });
+    tenText.setOrigin(0.5);
+    tenText.setDepth(-9);
+
+    // Windows
+    downing.fillStyle(0x87ceeb, 0.6);
+    // Left windows
+    downing.fillRect(baseX + 10, baseY - 90, 25, 30);
+    downing.fillRect(baseX + 10, baseY - 55, 25, 30);
+    // Right windows
+    downing.fillRect(baseX + 85, baseY - 90, 25, 30);
+    downing.fillRect(baseX + 85, baseY - 55, 25, 30);
+
+    // Window frames
+    downing.lineStyle(2, 0xffffff);
+    downing.strokeRect(baseX + 10, baseY - 90, 25, 30);
+    downing.strokeRect(baseX + 10, baseY - 55, 25, 30);
+    downing.strokeRect(baseX + 85, baseY - 90, 25, 30);
+    downing.strokeRect(baseX + 85, baseY - 55, 25, 30);
+
+    // Iconic lamp post
+    downing.fillStyle(0x1a1a1a, 1);
+    downing.fillRect(baseX - 15, baseY - 80, 5, 80);
+    downing.fillStyle(0xffd700, 1);
+    downing.fillRect(baseX - 20, baseY - 90, 15, 15);
+
+    downing.setDepth(-10);
+
+    // "DOWNING STREET" sign
+    const streetText = this.add.text(baseX + 60, baseY - 105, 'DOWNING STREET', {
+      fontSize: '5px',
+      color: '#ffffff',
+      fontFamily: 'monospace',
+    });
+    streetText.setOrigin(0.5);
+    streetText.setDepth(-9);
+  }
+
+  private createCareerSuccessStage(): void {
+    const stageX = 2850;
+    const baseY = 238;
+
+    const stage = this.add.graphics();
+
+    // Victory podium
+    stage.fillStyle(0x8b4513, 1);
+    stage.fillRect(stageX, baseY - 20, 100, 20);
+
+    // Backdrop (Civil Service blue)
+    stage.fillStyle(0x1a1a8c, 1);
+    stage.fillRect(stageX + 10, baseY - 90, 80, 70);
+
+    // Crown emblem (simplified)
+    stage.fillStyle(0xffd700, 1);
+    stage.fillRect(stageX + 35, baseY - 80, 30, 5);
+    stage.fillTriangle(stageX + 40, baseY - 80, stageX + 50, baseY - 90, stageX + 60, baseY - 80);
+
+    // "SUCCESS" banner
+    stage.fillStyle(0xffffff, 1);
+    stage.fillRect(stageX + 15, baseY - 60, 70, 15);
+
+    stage.setDepth(-10);
+
+    // "CAREER SUCCESS" text
+    const successText = this.add.text(stageX + 50, baseY - 53, 'CAREER SUCCESS', {
+      fontSize: '5px',
+      color: '#1a1a8c',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+    });
+    successText.setOrigin(0.5);
+    successText.setDepth(-9);
+
+    // Year text
+    const yearText = this.add.text(stageX + 50, baseY - 35, '2024', {
+      fontSize: '8px',
+      color: '#ffd700',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+    });
+    yearText.setOrigin(0.5);
+    yearText.setDepth(-9);
   }
 
   private playTrainArrival(): void {
@@ -877,6 +1311,7 @@ export class GameScene extends Phaser.Scene {
       bg.fillRect(0, (GAME_HEIGHT * i) / gradientSteps, level.width, GAME_HEIGHT / gradientSteps + 1);
     }
     bg.setScrollFactor(0.1, 0);
+    bg.setDepth(-20); // Behind all structures
 
     // Clouds
     if (level.background.hasClouds) {
@@ -889,6 +1324,7 @@ export class GameScene extends Phaser.Scene {
       water.fillStyle(0x4a90d9, 0.6);
       water.fillRect(0, GAME_HEIGHT - 50, level.width, 50);
       water.setScrollFactor(0.3, 1);
+      water.setDepth(-15); // Behind structures but above background
 
       // Wave animation
       this.tweens.add({
@@ -1217,6 +1653,221 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  private createDrunkStudents(): void {
+    if (!this.currentLevel.drunkStudents) return;
+
+    this.currentLevel.drunkStudents.forEach((config) => {
+      const student = new DrunkStudent(this, config.x, config.y, config.patrolDistance);
+      this.physics.add.collider(student, this.platforms);
+      this.drunkStudents.push(student);
+    });
+  }
+
+  // Called after player is created to set targets for enemies
+  private setEnemyTargets(): void {
+    // Set player as target for drunk students so they can detect and attack
+    this.drunkStudents.forEach((student) => {
+      student.setTarget(this.player);
+    });
+  }
+
+  private createBureaucrats(): void {
+    if (!this.currentLevel.bureaucrats) return;
+
+    this.currentLevel.bureaucrats.forEach((config) => {
+      const bureaucrat = new Bureaucrat(this, config.x, config.y, config.patrolDistance);
+      this.physics.add.collider(bureaucrat, this.platforms);
+      this.bureaucrats.push(bureaucrat);
+    });
+  }
+
+  private createBossArena(): void {
+    if (!this.currentLevel.boss) return;
+
+    const bossConfig = this.currentLevel.boss;
+
+    // Create the 10 Downing Street door backdrop
+    this.createNumber10Door(bossConfig.arenaLeft + 150, 150);
+
+    // Create boss arena visual boundary (invisible walls to trap player in arena)
+    this.createArenaWalls(bossConfig);
+
+    // Create Mayo Blaster pickup if available
+    this.createMayoBlasterPickup();
+  }
+
+  private createMayoBlasterPickup(): void {
+    if (!this.currentLevel.mayoBlasterPickup) return;
+
+    const pickup = this.currentLevel.mayoBlasterPickup;
+    this.mayoBlasterPickup = new MayoBlasterPickup(this, pickup.x, pickup.y);
+  }
+
+  private updateMayoBlaster(delta: number): void {
+    // Update pickup floating animation
+    if (this.mayoBlasterPickup && !this.mayoBlasterPickup.isCollected()) {
+      this.mayoBlasterPickup.update();
+
+      // Check if player collects the pickup
+      const playerBounds = this.player.getBounds();
+      const pickupBounds = this.mayoBlasterPickup.getBounds();
+
+      if (Phaser.Geom.Rectangle.Overlaps(playerBounds, pickupBounds)) {
+        this.mayoBlasterPickup.collect(() => {
+          // Create mayo blaster and equip it
+          this.mayoBlaster = new MayoBlaster(this, this.player);
+          this.mayoBlaster.equip();
+          this.mayoBlasterPickup = null;
+        });
+      }
+    }
+
+    // Update mayo blaster if equipped
+    if (this.mayoBlaster && this.mayoBlaster.isEquipped()) {
+      this.mayoBlaster.update(delta);
+
+      // Fire when SPACE key is pressed
+      if (Phaser.Input.Keyboard.JustDown(this.fireKey)) {
+        this.mayoBlaster.fire();
+      }
+
+      // Check projectile collisions with boss
+      if (this.boss && !this.bossDefeated) {
+        const projectiles = this.mayoBlaster.getProjectiles();
+        const bossBounds = this.boss.getBounds();
+
+        projectiles.forEach((projectile) => {
+          if (projectile.isAlive()) {
+            const projBounds = new Phaser.Geom.Rectangle(
+              projectile.x - 8,
+              projectile.y - 8,
+              16,
+              16
+            );
+
+            if (Phaser.Geom.Rectangle.Overlaps(projBounds, bossBounds)) {
+              // Hit the boss!
+              projectile.hit();
+
+              if (!this.boss!.isInvulnerable()) {
+                this.boss!.takeDamage();
+
+                // Show damage number
+                this.showBossDamageNumber(projectile.x, projectile.y);
+              }
+            }
+          }
+        });
+      }
+    }
+  }
+
+  private showBossDamageNumber(x: number, y: number): void {
+    const damageText = this.add.text(x, y, '-1', {
+      fontSize: '12px',
+      color: '#ff4444',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 2,
+    });
+    damageText.setOrigin(0.5);
+    damageText.setDepth(150);
+
+    // Float up and fade out
+    this.tweens.add({
+      targets: damageText,
+      y: y - 30,
+      alpha: 0,
+      duration: 600,
+      ease: 'Quad.easeOut',
+      onComplete: () => damageText.destroy(),
+    });
+  }
+
+  private createNumber10Door(x: number, y: number): void {
+    // Check if the texture exists, otherwise create programmatically
+    if (this.textures.exists('number_10_door')) {
+      const door = this.add.image(x, y, 'number_10_door');
+      door.setDepth(-5);
+      door.setScale(1.5);
+    } else {
+      // Create door programmatically
+      const doorGraphics = this.add.graphics();
+      doorGraphics.setPosition(x, y);
+      doorGraphics.setDepth(-5);
+
+      // Black door
+      doorGraphics.fillStyle(0x1a1a1a, 1);
+      doorGraphics.fillRoundedRect(-40, -60, 80, 120, 5);
+
+      // Door frame
+      doorGraphics.lineStyle(4, 0xffffff, 1);
+      doorGraphics.strokeRoundedRect(-40, -60, 80, 120, 5);
+
+      // Number 10
+      const numberText = this.add.text(x, y - 30, '10', {
+        fontSize: '24px',
+        color: '#ffffff',
+        fontFamily: 'serif',
+        fontStyle: 'bold',
+      });
+      numberText.setOrigin(0.5);
+      numberText.setDepth(-4);
+
+      // Lion knocker (simple)
+      doorGraphics.fillStyle(0xffd700, 1);
+      doorGraphics.fillCircle(15, 10, 8);
+
+      // Fanlight (semi-circle above door)
+      doorGraphics.fillStyle(0x333333, 1);
+      doorGraphics.fillRect(-35, -58, 70, 15);
+      doorGraphics.lineStyle(2, 0xffffff, 0.5);
+      for (let i = 0; i < 5; i++) {
+        doorGraphics.lineBetween(-30 + i * 15, -58, -30 + i * 15, -43);
+      }
+    }
+
+    // Add "10 DOWNING STREET" sign
+    const streetSign = this.add.text(x, y + 80, '10 DOWNING STREET', {
+      fontSize: '8px',
+      color: '#ffffff',
+      fontFamily: 'serif',
+      backgroundColor: '#1a1a1a',
+      padding: { x: 4, y: 2 },
+    });
+    streetSign.setOrigin(0.5);
+    streetSign.setDepth(-4);
+  }
+
+  private createArenaWalls(_bossConfig: { arenaLeft: number; arenaRight: number; arenaTop: number; arenaBottom: number }): void {
+    // Visual markers for arena boundaries (torches/pillars)
+    const leftPillar = this.add.graphics();
+    leftPillar.setPosition(_bossConfig.arenaLeft + 20, _bossConfig.arenaBottom - 40);
+    leftPillar.fillStyle(0x4a4a4a, 1);
+    leftPillar.fillRect(-10, -60, 20, 70);
+    leftPillar.fillStyle(0xff6600, 0.8);
+    leftPillar.fillCircle(0, -70, 10); // Torch flame
+    leftPillar.setDepth(-3);
+
+    const rightPillar = this.add.graphics();
+    rightPillar.setPosition(_bossConfig.arenaRight - 20, _bossConfig.arenaBottom - 40);
+    rightPillar.fillStyle(0x4a4a4a, 1);
+    rightPillar.fillRect(-10, -60, 20, 70);
+    rightPillar.fillStyle(0xff6600, 0.8);
+    rightPillar.fillCircle(0, -70, 10); // Torch flame
+    rightPillar.setDepth(-3);
+
+    // Animate torch flames
+    this.tweens.add({
+      targets: [leftPillar, rightPillar],
+      alpha: { from: 0.7, to: 1 },
+      duration: 200,
+      yoyo: true,
+      repeat: -1,
+    });
+  }
+
   private createFriends(): void {
     const collectedFriends = SaveManager.getCollectedFriends();
 
@@ -1237,18 +1888,26 @@ export class GameScene extends Phaser.Scene {
 
     // Then, spawn previously collected friends near player spawn (already following)
     const spawnPoint = this.currentLevel.playerStart;
-    collectedFriends.forEach((friendId, index) => {
+    let friendIndex = 0;
+    collectedFriends.forEach((friendId) => {
       const friendData = NPC_FRIENDS[friendId];
       if (friendData) {
+        // Skip advisors - they don't follow
+        if (friendData.isAdvisor) return;
+
+        // Skip friends who shouldn't appear in this level (e.g., went to different uni)
+        if (friendData.skipLevels?.includes(this.currentLevel.id)) return;
+
         // Spawn behind player spawn position
-        const friend = new NPCFriend(this, spawnPoint.x - 30 - index * 20, spawnPoint.y, {
+        const friend = new NPCFriend(this, spawnPoint.x - 30 - friendIndex * 20, spawnPoint.y, {
           id: friendId,
           name: friendData.name,
           spriteKey: friendData.spriteKey,
         });
-        // Mark as already collected so they start following immediately
-        friend.collect();
+        // Mark as already collected (skip effects for returning friends)
+        friend.collect(undefined, true);
         this.followingFriends.push(friend);
+        friendIndex++;
       }
     });
   }
@@ -1316,6 +1975,20 @@ export class GameScene extends Phaser.Scene {
       });
     });
 
+    // Player vs drunk students
+    this.drunkStudents.forEach((student) => {
+      this.physics.add.overlap(this.player, student, () => {
+        this.handlePlayerDrunkStudentCollision(student);
+      });
+    });
+
+    // Player vs bureaucrats
+    this.bureaucrats.forEach((bureaucrat) => {
+      this.physics.add.overlap(this.player, bureaucrat, () => {
+        this.handlePlayerBureaucratCollision(bureaucrat);
+      });
+    });
+
     // Player vs NPC friends (collectible)
     this.friends.forEach((friend) => {
       this.physics.add.overlap(this.player, friend, () => {
@@ -1327,10 +2000,13 @@ export class GameScene extends Phaser.Scene {
             // Update player max health
             this.player.setMaxHealth(SaveManager.getMaxHealth());
 
-            // Start following
-            const followOffset = this.followingFriends.length;
-            friend.setFollowTarget(this.player, followOffset);
-            this.followingFriends.push(friend);
+            // Start following (unless advisor)
+            const friendData = NPC_FRIENDS[friend.friendId];
+            if (!friendData?.isAdvisor) {
+              const followOffset = this.followingFriends.length;
+              friend.setFollowTarget(this.player, followOffset);
+              this.followingFriends.push(friend);
+            }
           });
         }
       });
@@ -1385,6 +2061,52 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  private handlePlayerDrunkStudentCollision(student: DrunkStudent): void {
+    if (!student.isAlive()) return;
+
+    const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
+
+    // Mayo Maisha mode - any contact damages enemy
+    if (this.player.isMayoMaisha()) {
+      student.stomp();
+      if (playerBody.velocity.y > 0) {
+        this.player.setVelocityY(-200);
+      }
+      return;
+    }
+
+    // Normal mode - check if player is stomping (from above)
+    if (playerBody.velocity.y > 0 && this.player.y < student.y - 10) {
+      student.stomp();
+      this.player.setVelocityY(-250);
+    } else {
+      this.player.takeDamage(1);
+    }
+  }
+
+  private handlePlayerBureaucratCollision(bureaucrat: Bureaucrat): void {
+    if (!bureaucrat.isAlive()) return;
+
+    const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
+
+    // Mayo Maisha mode - any contact damages enemy
+    if (this.player.isMayoMaisha()) {
+      bureaucrat.stomp();
+      if (playerBody.velocity.y > 0) {
+        this.player.setVelocityY(-200);
+      }
+      return;
+    }
+
+    // Normal mode - check if player is stomping (from above)
+    if (playerBody.velocity.y > 0 && this.player.y < bureaucrat.y - 10) {
+      bureaucrat.stomp();
+      this.player.setVelocityY(-250);
+    } else {
+      this.player.takeDamage(1);
+    }
+  }
+
   private setupBatAttackCollisions(): void {
     const hitbox = this.player.getAttackHitbox();
 
@@ -1406,6 +2128,17 @@ export class GameScene extends Phaser.Scene {
           seagull.stomp();
           this.player.playBatHitSound();
           this.createBatHitEffect(seagull.x, seagull.y);
+        }
+      });
+    });
+
+    // Bat attack vs bureaucrats
+    this.bureaucrats.forEach((bureaucrat) => {
+      this.physics.add.overlap(hitbox, bureaucrat, () => {
+        if (this.player.isCurrentlyAttacking() && bureaucrat.isAlive()) {
+          bureaucrat.stomp();
+          this.player.playBatHitSound();
+          this.createBatHitEffect(bureaucrat.x, bureaucrat.y);
         }
       });
     });
@@ -1442,6 +2175,9 @@ export class GameScene extends Phaser.Scene {
   private setupInput(): void {
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();
+
+      // Fire key for mayo blaster
+      this.fireKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
       this.input.keyboard.on('keydown-ESC', () => {
         this.scene.pause();
@@ -1502,14 +2238,32 @@ export class GameScene extends Phaser.Scene {
       seagull.update();
     });
 
+    // Update drunk students
+    this.drunkStudents.forEach((student) => {
+      student.update();
+    });
+
+    // Update bureaucrats
+    this.bureaucrats.forEach((bureaucrat) => {
+      bureaucrat.update();
+    });
+
+    // Check for boss trigger and update boss
+    this.updateBoss();
+
+    // Update mayo blaster
+    this.updateMayoBlaster(delta);
+
     // Update following friends
     this.followingFriends.forEach((friend) => {
       friend.update();
     });
 
-    // Check for level completion
+    // Check for level completion (only if boss is defeated or no boss)
     if (this.player.x >= this.currentLevel.endX) {
-      this.completeLevel();
+      if (!this.currentLevel.boss || this.bossDefeated) {
+        this.completeLevel();
+      }
     }
 
     // Check for death (falling into pit/gap - instantly fatal)
@@ -1530,10 +2284,20 @@ export class GameScene extends Phaser.Scene {
     } else if (this.currentLevel.id === LEVELS.BRIGHTON) {
       this.playBusDeparture(timeElapsed);
     } else if (this.currentLevel.id === LEVELS.VARNDEAN) {
-      // Varndean ends with boss battle!
+      // Varndean ends with IB exams!
       this.player.setVelocity(0, 0);
       (this.player.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
-      this.playBossBattleIntro();
+      this.playExamIntro();
+    } else if (this.currentLevel.id === LEVELS.UCL) {
+      // UCL ends with graduation ceremony!
+      this.player.setVelocity(0, 0);
+      (this.player.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
+      this.playGraduationCeremony(timeElapsed);
+    } else if (this.currentLevel.id === LEVELS.CIVIL_SERVICE) {
+      // Civil Service ends with career success - final level!
+      this.player.setVelocity(0, 0);
+      (this.player.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
+      this.playCareerSuccessCelebration(timeElapsed);
     } else {
       this.player.playVictory();
       this.player.setVelocity(0, 0);
@@ -1542,75 +2306,72 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private playBossBattleIntro(): void {
-    // Dramatic build-up to boss battle
+  private playExamIntro(): void {
+    // Build-up to end of year exams
     this.player.play('maisha-idle');
 
-    // Show warning text
-    const warningText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, '⚠️ BOSS APPROACHING ⚠️', {
+    // Show exam announcement
+    const examText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, 'END OF YEAR EXAMS!', {
       fontSize: '14px',
-      color: '#e74c3c',
+      color: '#1a1a8c',
       fontFamily: 'monospace',
       fontStyle: 'bold',
-      stroke: '#000000',
+      stroke: '#ffffff',
       strokeThickness: 3,
     });
-    warningText.setOrigin(0.5);
-    warningText.setScrollFactor(0);
-    warningText.setDepth(100);
+    examText.setOrigin(0.5);
+    examText.setScrollFactor(0);
+    examText.setDepth(100);
 
-    // Flashing effect
+    // Pulse effect
     this.tweens.add({
-      targets: warningText,
-      alpha: 0.3,
-      duration: 300,
+      targets: examText,
+      scale: 1.1,
+      duration: 500,
       yoyo: true,
-      repeat: 5,
+      repeat: 2,
     });
 
-    // Camera shake
-    this.cameras.main.shake(1500, 0.01);
-
-    // Play ominous sound
+    // Play school bell sound
     const soundManager = this.sound as Phaser.Sound.WebAudioSoundManager;
     if (soundManager.context) {
       const ctx = soundManager.context;
-      const notes = [110, 103, 98, 82];
+      const notes = [523, 659, 784, 659, 523];
       notes.forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.type = 'sawtooth';
+        osc.type = 'sine';
         osc.frequency.value = freq;
-        const startTime = ctx.currentTime + i * 0.4;
-        gain.gain.setValueAtTime(0.2, startTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
+        const startTime = ctx.currentTime + i * 0.2;
+        gain.gain.setValueAtTime(0.15, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
         osc.start(startTime);
-        osc.stop(startTime + 0.5);
+        osc.stop(startTime + 0.3);
       });
     }
 
-    // Transition to boss battle
-    this.time.delayedCall(2500, () => {
-      warningText.destroy();
+    // Transition to exam scene
+    this.time.delayedCall(2000, () => {
+      examText.destroy();
 
-      const bossText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'NICKI THE CHEMISTRY TEACHER', {
+      const ibText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'IB DIPLOMA PROGRAMME', {
         fontSize: '12px',
-        color: '#9b59b6',
+        color: '#1a1a8c',
         fontFamily: 'monospace',
         fontStyle: 'bold',
-        stroke: '#000000',
+        stroke: '#ffffff',
         strokeThickness: 2,
       });
-      bossText.setOrigin(0.5);
-      bossText.setScrollFactor(0);
-      bossText.setDepth(100);
+      ibText.setOrigin(0.5);
+      ibText.setScrollFactor(0);
+      ibText.setDepth(100);
 
-      this.time.delayedCall(2000, () => {
+      this.time.delayedCall(1500, () => {
         this.cameras.main.fadeOut(500, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
-          this.scene.start(SCENES.BOSS_BATTLE);
+          this.scene.start(SCENES.EXAM);
         });
       });
     });
@@ -1684,6 +2445,429 @@ export class GameScene extends Phaser.Scene {
         });
       },
     });
+  }
+
+  private updateBoss(): void {
+    if (!this.currentLevel.boss || this.bossDefeated) return;
+
+    const bossConfig = this.currentLevel.boss;
+
+    // Check if player entered the boss arena - spawn boss
+    if (!this.boss && this.player.x >= bossConfig.arenaLeft + 50) {
+      this.spawnBoss();
+    }
+
+    // Update boss if spawned
+    if (this.boss && this.boss.isAlive()) {
+      this.boss.update();
+
+      // Check player collision with boss
+      this.checkBossCollision();
+
+      // Check player collision with boss projectiles
+      this.checkBossProjectileCollisions();
+    }
+  }
+
+  private spawnBoss(): void {
+    if (!this.currentLevel.boss || this.boss) return;
+
+    const bossConfig = this.currentLevel.boss;
+
+    // Show boss intro text
+    this.showBossIntro();
+
+    // Create the boss
+    this.boss = new GiantWasp(this, bossConfig.x, bossConfig.y, {
+      left: bossConfig.arenaLeft,
+      right: bossConfig.arenaRight,
+      top: bossConfig.arenaTop,
+      bottom: bossConfig.arenaBottom,
+    });
+
+    // Set player as target
+    this.boss.setTarget(this.player);
+
+    // Listen for boss defeat
+    this.boss.on('defeated', () => {
+      this.onBossDefeated();
+    });
+
+    // Lock camera to boss arena
+    this.cameras.main.setBounds(
+      bossConfig.arenaLeft - 50,
+      0,
+      bossConfig.arenaRight - bossConfig.arenaLeft + 100,
+      GAME_HEIGHT
+    );
+  }
+
+  private showBossIntro(): void {
+    // Dramatic boss intro
+    this.cameras.main.flash(500, 255, 0, 0);
+    this.cameras.main.shake(500, 0.02);
+
+    // Boss name text
+    const bossName = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 3, '👑 THE GIANT WASP 👑', {
+      fontSize: '16px',
+      color: '#ffd700',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 4,
+    });
+    bossName.setOrigin(0.5);
+    bossName.setScrollFactor(0);
+    bossName.setDepth(200);
+    bossName.setAlpha(0);
+
+    const subtitle = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 3 + 25, 'Supreme Ruler of 10 Downing Street', {
+      fontSize: '10px',
+      color: '#ffffff',
+      fontFamily: 'monospace',
+      stroke: '#000000',
+      strokeThickness: 2,
+    });
+    subtitle.setOrigin(0.5);
+    subtitle.setScrollFactor(0);
+    subtitle.setDepth(200);
+    subtitle.setAlpha(0);
+
+    // Animate boss intro text
+    this.tweens.add({
+      targets: [bossName, subtitle],
+      alpha: 1,
+      duration: 500,
+      hold: 2000,
+      yoyo: true,
+      onComplete: () => {
+        bossName.destroy();
+        subtitle.destroy();
+      },
+    });
+  }
+
+  private checkBossCollision(): void {
+    if (!this.boss || !this.boss.isAlive()) return;
+
+    const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
+
+    // Check distance for collision
+    const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.boss.x, this.boss.y);
+
+    if (distance < 45) {
+      // Check if player is stomping (falling from above)
+      if (playerBody.velocity.y > 0 && this.player.y < this.boss.y - 20) {
+        // Stomp the boss!
+        this.boss.takeDamage();
+
+        // Bounce player up
+        playerBody.setVelocityY(-300);
+
+        // Play stomp sound
+        this.playBossStompSound();
+      } else if (!this.boss.isInvulnerable()) {
+        // Player got hit by boss
+        this.playerHitByBoss();
+      }
+    }
+  }
+
+  private playBossStompSound(): void {
+    const soundManager = this.sound as Phaser.Sound.WebAudioSoundManager;
+    if (soundManager.context) {
+      const ctx = soundManager.context;
+
+      // Satisfying stomp sound
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.15);
+
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.15);
+    }
+  }
+
+  private checkBossProjectileCollisions(): void {
+    if (!this.boss || !this.boss.isAlive()) return;
+
+    const projectiles = this.boss.getProjectiles();
+    const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
+
+    projectiles.forEach((projectile) => {
+      if (!projectile.active) return;
+
+      const distance = Phaser.Math.Distance.Between(
+        projectile.x,
+        projectile.y,
+        this.player.x,
+        this.player.y
+      );
+
+      if (distance < 18) {
+        // Hit by projectile
+        this.playerHitByBoss();
+        projectile.destroy();
+      }
+    });
+
+    // Also check if player can stomp projectiles during Mayo Maisha mode
+    if (this.player.isMayoMaisha()) {
+      projectiles.forEach((projectile) => {
+        if (!projectile.active) return;
+
+        const distance = Phaser.Math.Distance.Between(
+          projectile.x,
+          projectile.y,
+          this.player.x,
+          this.player.y
+        );
+
+        if (distance < 25 && playerBody.velocity.y > 0) {
+          // Destroy projectile
+          projectile.destroy();
+        }
+      });
+    }
+  }
+
+  private playerHitByBoss(): void {
+    if (this.player.isMayoMaisha()) return; // Invincible in Mayo mode
+
+    // Damage player (1 damage)
+    this.player.takeDamage(1);
+
+    // Knockback from boss
+    const knockbackDir = this.player.x < (this.boss?.x || 0) ? -1 : 1;
+    (this.player.body as Phaser.Physics.Arcade.Body).setVelocityX(knockbackDir * 200);
+    (this.player.body as Phaser.Physics.Arcade.Body).setVelocityY(-150);
+  }
+
+  private onBossDefeated(): void {
+    this.bossDefeated = true;
+    this.boss = null;
+
+    // Unlock camera bounds
+    this.cameras.main.setBounds(0, 0, this.currentLevel.width, this.currentLevel.height);
+
+    // Dramatic pause then victory
+    this.time.delayedCall(2500, () => {
+      this.playSupremeRulerVictory();
+    });
+  }
+
+  private playSupremeRulerVictory(): void {
+    this.levelComplete = true;
+
+    // Stop player
+    this.player.setVelocity(0, 0);
+    (this.player.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
+    this.player.playVictory();
+
+    // Flash to white
+    this.cameras.main.flash(1000, 255, 255, 255);
+
+    // Show Supreme Ruler title
+    this.time.delayedCall(1200, () => {
+      const crownText = this.add.text(GAME_WIDTH / 2, 60, '👑', {
+        fontSize: '48px',
+      });
+      crownText.setOrigin(0.5);
+      crownText.setScrollFactor(0);
+      crownText.setDepth(300);
+      crownText.setAlpha(0);
+
+      const titleText = this.add.text(GAME_WIDTH / 2, 120, 'MAISHA HUSSAIN', {
+        fontSize: '20px',
+        color: '#ffd700',
+        fontFamily: 'monospace',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 4,
+      });
+      titleText.setOrigin(0.5);
+      titleText.setScrollFactor(0);
+      titleText.setDepth(300);
+      titleText.setAlpha(0);
+
+      const subtitleText = this.add.text(GAME_WIDTH / 2, 150, 'SUPREME RULER OF THE UNIVERSE', {
+        fontSize: '12px',
+        color: '#ffffff',
+        fontFamily: 'monospace',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 3,
+      });
+      subtitleText.setOrigin(0.5);
+      subtitleText.setScrollFactor(0);
+      subtitleText.setDepth(300);
+      subtitleText.setAlpha(0);
+
+      // Animate text in
+      this.tweens.add({
+        targets: crownText,
+        alpha: 1,
+        y: 50,
+        duration: 800,
+        ease: 'Bounce.easeOut',
+      });
+
+      this.tweens.add({
+        targets: titleText,
+        alpha: 1,
+        duration: 1000,
+        delay: 500,
+        ease: 'Power2.easeOut',
+      });
+
+      this.tweens.add({
+        targets: subtitleText,
+        alpha: 1,
+        duration: 1000,
+        delay: 800,
+        ease: 'Power2.easeOut',
+      });
+
+      // Create fireworks/particles
+      this.createVictoryFireworks();
+
+      // Play victory fanfare
+      this.playSupremeRulerFanfare();
+
+      // Birthday message
+      this.time.delayedCall(3000, () => {
+        const birthdayText = this.add.text(GAME_WIDTH / 2, 200, 'HAPPY BIRTHDAY MAISHA! 🎂', {
+          fontSize: '14px',
+          color: '#ff69b4',
+          fontFamily: 'monospace',
+          fontStyle: 'bold',
+          stroke: '#000000',
+          strokeThickness: 3,
+        });
+        birthdayText.setOrigin(0.5);
+        birthdayText.setScrollFactor(0);
+        birthdayText.setDepth(300);
+
+        // Pulse animation
+        this.tweens.add({
+          targets: birthdayText,
+          scale: { from: 0.8, to: 1.2 },
+          duration: 500,
+          yoyo: true,
+          repeat: -1,
+        });
+      });
+
+      // Go to credits after celebration
+      this.time.delayedCall(7000, () => {
+        this.cameras.main.fadeOut(1500, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          this.scene.start(SCENES.CREDITS);
+        });
+      });
+    });
+  }
+
+  private createVictoryFireworks(): void {
+    // Create multiple firework bursts
+    const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffd700];
+
+    for (let i = 0; i < 15; i++) {
+      this.time.delayedCall(i * 400, () => {
+        const x = Phaser.Math.Between(50, GAME_WIDTH - 50);
+        const y = Phaser.Math.Between(30, 100);
+        const color = colors[i % colors.length];
+
+        // Create burst
+        for (let j = 0; j < 20; j++) {
+          const particle = this.add.graphics();
+          particle.setPosition(x, y);
+          particle.fillStyle(color, 1);
+          particle.fillCircle(0, 0, 3);
+          particle.setScrollFactor(0);
+          particle.setDepth(250);
+
+          const angle = (j / 20) * Math.PI * 2;
+          const speed = Phaser.Math.Between(50, 100);
+
+          this.tweens.add({
+            targets: particle,
+            x: x + Math.cos(angle) * speed,
+            y: y + Math.sin(angle) * speed + 50,
+            alpha: 0,
+            duration: 1000,
+            ease: 'Quad.easeOut',
+            onComplete: () => particle.destroy(),
+          });
+        }
+      });
+    }
+  }
+
+  private playSupremeRulerFanfare(): void {
+    const soundManager = this.sound as Phaser.Sound.WebAudioSoundManager;
+    if (soundManager.context) {
+      const ctx = soundManager.context;
+
+      // Royal fanfare - ascending triumphant notes
+      const fanfare = [
+        { freq: 523, time: 0, dur: 0.2 },     // C5
+        { freq: 659, time: 0.2, dur: 0.2 },   // E5
+        { freq: 784, time: 0.4, dur: 0.2 },   // G5
+        { freq: 1047, time: 0.6, dur: 0.4 },  // C6 (hold)
+        { freq: 784, time: 1.2, dur: 0.15 },  // G5
+        { freq: 880, time: 1.35, dur: 0.15 }, // A5
+        { freq: 988, time: 1.5, dur: 0.15 },  // B5
+        { freq: 1047, time: 1.65, dur: 0.6 }, // C6 (big hold)
+        { freq: 1319, time: 2.4, dur: 0.8 },  // E6 (finale)
+      ];
+
+      fanfare.forEach((note) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.type = 'sine';
+        osc.frequency.value = note.freq;
+
+        const startTime = ctx.currentTime + note.time;
+        gain.gain.setValueAtTime(0.3, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + note.dur);
+
+        osc.start(startTime);
+        osc.stop(startTime + note.dur);
+      });
+
+      // Add brass-like harmonics
+      fanfare.forEach((note) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.type = 'sawtooth';
+        osc.frequency.value = note.freq / 2; // Octave down for brass effect
+
+        const startTime = ctx.currentTime + note.time;
+        gain.gain.setValueAtTime(0.1, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + note.dur);
+
+        osc.start(startTime);
+        osc.stop(startTime + note.dur);
+      });
+    }
   }
 
   private handlePitDeath(): void {
@@ -1973,6 +3157,262 @@ export class GameScene extends Phaser.Scene {
         oscillator.stop(startTime + 0.4);
       });
     }
+  }
+
+  private playGraduationCeremony(timeElapsed: number): void {
+    // Maisha walks to the podium
+    this.player.play('maisha-idle');
+
+    // "GRADUATION DAY!" announcement
+    const gradText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 50, 'GRADUATION DAY!', {
+      fontSize: '16px',
+      color: '#ffd700',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+      stroke: '#500778',
+      strokeThickness: 3,
+    });
+    gradText.setOrigin(0.5);
+    gradText.setScrollFactor(0);
+    gradText.setDepth(100);
+
+    // Pulse effect
+    this.tweens.add({
+      targets: gradText,
+      scale: 1.1,
+      duration: 400,
+      yoyo: true,
+      repeat: 2,
+    });
+
+    // Play graduation music (triumphant fanfare)
+    const soundManager = this.sound as Phaser.Sound.WebAudioSoundManager;
+    if (soundManager.context) {
+      const ctx = soundManager.context;
+      // Pomp and Circumstance style fanfare
+      const notes = [392, 440, 494, 523, 587, 659, 698, 784];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const startTime = ctx.currentTime + i * 0.2;
+        gain.gain.setValueAtTime(0.2, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.4);
+        osc.start(startTime);
+        osc.stop(startTime + 0.4);
+      });
+    }
+
+    // After announcement, show mortarboard hats falling
+    this.time.delayedCall(1500, () => {
+      gradText.destroy();
+
+      // "Congratulations!" text
+      const congratsText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60, 'Congratulations, Maisha!', {
+        fontSize: '12px',
+        color: '#ffffff',
+        fontFamily: 'monospace',
+        fontStyle: 'bold',
+        stroke: '#500778',
+        strokeThickness: 2,
+      });
+      congratsText.setOrigin(0.5);
+      congratsText.setScrollFactor(0);
+      congratsText.setDepth(100);
+
+      // "BASc" text
+      const degreeText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, 'BASc Arts and Sciences', {
+        fontSize: '10px',
+        color: '#ffd700',
+        fontFamily: 'monospace',
+      });
+      degreeText.setOrigin(0.5);
+      degreeText.setScrollFactor(0);
+      degreeText.setDepth(100);
+
+      // Create mortarboard hat texture
+      if (!this.textures.exists('mortarboard')) {
+        const hatGraphics = this.add.graphics();
+        hatGraphics.fillStyle(0x1a1a1a, 1);
+        // Top square
+        hatGraphics.fillRect(0, 0, 16, 4);
+        // Cap base
+        hatGraphics.fillStyle(0x333333, 1);
+        hatGraphics.fillRect(4, 4, 8, 8);
+        // Tassel
+        hatGraphics.fillStyle(0xffd700, 1);
+        hatGraphics.fillRect(8, 0, 2, 6);
+        hatGraphics.generateTexture('mortarboard', 16, 12);
+        hatGraphics.destroy();
+      }
+
+      // Spawn falling mortarboard hats
+      for (let i = 0; i < 25; i++) {
+        const x = Phaser.Math.Between(50, GAME_WIDTH - 50);
+        const delay = Phaser.Math.Between(0, 800);
+        const hat = this.add.sprite(x, -20, 'mortarboard');
+        hat.setScrollFactor(0);
+        hat.setDepth(99);
+        hat.setScale(Phaser.Math.FloatBetween(0.8, 1.2));
+
+        this.time.delayedCall(delay, () => {
+          this.tweens.add({
+            targets: hat,
+            y: GAME_HEIGHT + 20,
+            rotation: Phaser.Math.FloatBetween(-2, 2),
+            duration: Phaser.Math.Between(1500, 2500),
+            ease: 'Quad.easeIn',
+            onComplete: () => hat.destroy(),
+          });
+        });
+      }
+
+      // Fade to black and show level complete
+      this.time.delayedCall(2500, () => {
+        congratsText.destroy();
+        degreeText.destroy();
+        this.showLevelComplete(timeElapsed);
+      });
+    });
+  }
+
+  private playCareerSuccessCelebration(_timeElapsed: number): void {
+    // Final level completion - career success!
+    this.player.play('maisha-idle');
+
+    // "CAREER SUCCESS!" announcement
+    const successText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 50, 'CAREER SUCCESS!', {
+      fontSize: '16px',
+      color: '#ffd700',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+      stroke: '#1a1a8c',
+      strokeThickness: 3,
+    });
+    successText.setOrigin(0.5);
+    successText.setScrollFactor(0);
+    successText.setDepth(100);
+
+    // Pulse effect
+    this.tweens.add({
+      targets: successText,
+      scale: 1.1,
+      duration: 400,
+      yoyo: true,
+      repeat: 2,
+    });
+
+    // Play triumphant fanfare
+    const soundManager = this.sound as Phaser.Sound.WebAudioSoundManager;
+    if (soundManager.context) {
+      const ctx = soundManager.context;
+      // Majestic fanfare
+      const notes = [523, 659, 784, 1047, 784, 659, 523, 659, 784, 1047];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const startTime = ctx.currentTime + i * 0.15;
+        gain.gain.setValueAtTime(0.2, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.35);
+        osc.start(startTime);
+        osc.stop(startTime + 0.35);
+      });
+    }
+
+    // After announcement, show final celebration
+    this.time.delayedCall(1500, () => {
+      successText.destroy();
+
+      // "Congratulations!" text
+      const congratsText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60, 'Congratulations, Maisha!', {
+        fontSize: '12px',
+        color: '#ffffff',
+        fontFamily: 'monospace',
+        fontStyle: 'bold',
+        stroke: '#1a1a8c',
+        strokeThickness: 2,
+      });
+      congratsText.setOrigin(0.5);
+      congratsText.setScrollFactor(0);
+      congratsText.setDepth(100);
+
+      // Achievement text
+      const achievementText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 40, 'Civil Servant Extraordinaire', {
+        fontSize: '10px',
+        color: '#ffd700',
+        fontFamily: 'monospace',
+      });
+      achievementText.setOrigin(0.5);
+      achievementText.setScrollFactor(0);
+      achievementText.setDepth(100);
+
+      // Create confetti texture
+      if (!this.textures.exists('confetti')) {
+        const confettiGraphics = this.add.graphics();
+        confettiGraphics.fillStyle(0xffffff, 1);
+        confettiGraphics.fillRect(0, 0, 6, 6);
+        confettiGraphics.generateTexture('confetti', 6, 6);
+        confettiGraphics.destroy();
+      }
+
+      // Spawn confetti with multiple colors
+      const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffd700];
+      for (let i = 0; i < 40; i++) {
+        const x = Phaser.Math.Between(30, GAME_WIDTH - 30);
+        const delay = Phaser.Math.Between(0, 1000);
+        const confetti = this.add.sprite(x, -10, 'confetti');
+        confetti.setScrollFactor(0);
+        confetti.setDepth(99);
+        confetti.setTint(colors[Phaser.Math.Between(0, colors.length - 1)]);
+        confetti.setScale(Phaser.Math.FloatBetween(0.5, 1));
+
+        this.time.delayedCall(delay, () => {
+          this.tweens.add({
+            targets: confetti,
+            y: GAME_HEIGHT + 20,
+            x: x + Phaser.Math.Between(-50, 50),
+            rotation: Phaser.Math.FloatBetween(-3, 3),
+            duration: Phaser.Math.Between(2000, 3500),
+            ease: 'Quad.easeIn',
+            onComplete: () => confetti.destroy(),
+          });
+        });
+      }
+
+      // Go to credits (final level!)
+      this.time.delayedCall(3000, () => {
+        congratsText.destroy();
+        achievementText.destroy();
+
+        // Final message
+        const finalText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'THE END', {
+          fontSize: '18px',
+          color: '#ffd700',
+          fontFamily: 'monospace',
+          fontStyle: 'bold',
+          stroke: '#1a1a8c',
+          strokeThickness: 3,
+        });
+        finalText.setOrigin(0.5);
+        finalText.setScrollFactor(0);
+        finalText.setDepth(100);
+
+        // Fade to credits
+        this.time.delayedCall(2000, () => {
+          this.cameras.main.fadeOut(1000, 0, 0, 0);
+          this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.scene.start(SCENES.CREDITS);
+          });
+        });
+      });
+    });
   }
 
   private showLevelComplete(timeMs: number): void {

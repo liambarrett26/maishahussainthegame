@@ -5,6 +5,7 @@ import { GameScene } from './scenes/GameScene';
 import { PauseScene } from './scenes/PauseScene';
 import { CreditsScene } from './scenes/CreditsScene';
 import { BossBattleScene } from './scenes/BossBattleScene';
+import { ExamScene } from './scenes/ExamScene';
 import { GAME_WIDTH, GAME_HEIGHT } from './utils/Constants';
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -24,7 +25,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
-  scene: [BootScene, MenuScene, GameScene, PauseScene, CreditsScene, BossBattleScene],
+  scene: [BootScene, MenuScene, GameScene, PauseScene, CreditsScene, BossBattleScene, ExamScene],
 };
 
 new Phaser.Game(config);

@@ -21,6 +21,7 @@ export const SCENES = {
   PAUSE: 'PauseScene',
   CREDITS: 'CreditsScene',
   BOSS_BATTLE: 'BossBattleScene',
+  EXAM: 'ExamScene',
 } as const;
 
 // Level IDs
