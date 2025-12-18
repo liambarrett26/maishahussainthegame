@@ -8,6 +8,7 @@ export interface InfoPopupConfig {
   spriteKey?: string;
   spriteFrame?: string;
   color?: number;
+  textColor?: string; // Text color for description (default white)
 }
 
 // Predefined info popups for game elements
@@ -19,6 +20,7 @@ export const INFO_POPUPS: Record<string, InfoPopupConfig> = {
     spriteKey: 'mayo',
     spriteFrame: 'bob_0',
     color: 0xfff8dc,
+    textColor: '#333333', // Dark text for light background
   },
   bat: {
     id: 'bat',
@@ -61,7 +63,7 @@ export const INFO_POPUPS: Record<string, InfoPopupConfig> = {
   mayo_blaster: {
     id: 'mayo_blaster',
     title: 'MAYO BLASTER!',
-    description: 'Press SPACE to fire mayo globs!\nHits ALL enemies for 1 damage.\n50 shots - use them wisely!',
+    description: 'Press SPACE to fire mayo globs!\nHits ALL enemies for 1 damage.',
     color: 0xffeaa7,
   },
   checkpoint: {
@@ -106,8 +108,8 @@ export class InfoPopup {
     this.container.add(overlay);
 
     // Main popup box
-    const boxWidth = 200;
-    const boxHeight = 120;
+    const boxWidth = 220;
+    const boxHeight = 140;
     const boxColor = config.color || 0x2c3e50;
 
     const box = this.scene.add.graphics();
@@ -169,7 +171,7 @@ export class InfoPopup {
     // Description text
     const desc = this.scene.add.text(0, spriteY + 10, config.description, {
       fontSize: '9px',
-      color: '#ffffff',
+      color: config.textColor || '#ffffff',
       fontFamily: 'monospace',
       align: 'center',
       lineSpacing: 4,
@@ -207,13 +209,8 @@ export class InfoPopup {
     // Play popup sound
     this.playPopupSound();
 
-    // Listen for ENTER key to close
+    // Listen for ENTER key to close (ENTER only, not SPACE)
     this.scene.input.keyboard?.once('keydown-ENTER', () => {
-      this.close();
-    });
-
-    // Also allow SPACE as alternative
-    this.scene.input.keyboard?.once('keydown-SPACE', () => {
       this.close();
     });
 

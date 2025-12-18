@@ -14,6 +14,9 @@ dist/
 *.sln
 *.sw?
 
+# Claude Code session data
+.claude/
+
 # OS files
 .DS_Store
 Thumbs.db

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SCENES, GAME_WIDTH, GAME_HEIGHT, LEVELS } from '../utils/Constants';
 import { SaveManager } from '../utils/SaveManager';
+import { MusicManager } from '../utils/MusicManager';
 
 interface MenuButton {
   container: Phaser.GameObjects.Container;
@@ -26,8 +27,15 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Reset camera to ensure clean state (fixes black screen issues from scene transitions)
+    this.cameras.main.resetFX();
+    this.cameras.main.setAlpha(1);
+
     // Fade in from black
     this.cameras.main.fadeIn(500, 0, 0, 0);
+
+    // Play menu music
+    MusicManager.playMenu(this);
 
     // Create layered background
     this.createBackground();

@@ -27,42 +27,51 @@ Boot → Menu → Game → Level Complete → (next level or Credits)
 ```
 
 ### Key Systems
-- **Player:** 3 HP, unlimited lives, checkpoint respawn. Jump stomp combat (no direct attack). Squash/stretch on jump/land.
+- **Player:** 3 HP, unlimited lives, checkpoint respawn. Jump stomp combat + Mayo Blaster weapon. Squash/stretch on jump/land.
 - **Platforming:** Coyote time (100ms), jump buffer (100ms), variable jump height
-- **Save:** LocalStorage with checkpoint auto-save. Tracks level, mayo collected, best times
-- **Levels:** Data-driven via `LevelConfig.ts`. Currently 3 levels implemented (Worthing, Brighton, Varndean)
+- **Save:** LocalStorage with checkpoint auto-save. Tracks level, mayo collected, shown popups
+- **Levels:** Data-driven via `LevelConfig.ts`. All 5 levels implemented (Worthing, Brighton, Varndean, UCL, Civil Service)
+- **Music:** MusicManager singleton handles level-specific tracks (Kevin MacLeod, CC BY 3.0)
+- **Info Popups:** First-encounter explanations for enemies/items (tracked in save data)
+- **Mayo Mode:** Toggle invincibility (M key), Heal (H key) - uses collected mayo
 
 ### Project Structure
 ```
 src/
 ├── main.ts                    # Entry point, Phaser config
 ├── scenes/
-│   ├── BootScene.ts          # Asset loading, animation setup
+│   ├── BootScene.ts          # Asset loading, animation setup, music loading
 │   ├── MenuScene.ts          # Animated menu with parallax background
-│   ├── GameScene.ts          # Core gameplay, level loading
+│   ├── GameScene.ts          # Core gameplay, level loading, pit death handling
 │   ├── PauseScene.ts         # Pause overlay
-│   ├── CreditsScene.ts       # Credits with animated Maisha
+│   ├── CreditsScene.ts       # Credits with animated Maisha + music credit
 │   └── levels/
 │       └── LevelConfig.ts    # Level data (platforms, mayo, enemies, checkpoints)
 ├── objects/
-│   ├── Player.ts             # Maisha with animations & state machine
+│   ├── Player.ts             # Maisha with animations, state machine, Mayo Blaster
 │   ├── collectibles/
 │   │   ├── MayoJar.ts        # Collectible with particles & sound
 │   │   └── Checkpoint.ts     # Checkpoint flags with save system
 │   ├── enemies/
-│   │   └── Wasp.ts           # Patrol/chase AI with stomp detection
+│   │   ├── Wasp.ts           # Patrol/chase AI with stomp detection
+│   │   ├── Seagull.ts        # Dive-bomb attack pattern
+│   │   ├── DrunkStudent.ts   # Unpredictable stumbling movement
+│   │   ├── Bureaucrat.ts     # Slow pursuit with speech bubbles
+│   │   └── GiantWasp.ts      # Final boss (2 phases, 20 HP)
 │   └── npcs/
-│       └── NPC.ts            # Dialogue system (placeholder)
+│       └── NPC.ts            # Friend NPCs that follow Maisha
 ├── ui/
-│   └── HUD.ts                # Pixel art hearts + mayo counter
+│   ├── HUD.ts                # Hearts, mayo counter, mayo mode/heal hints
+│   └── InfoPopup.ts          # First-encounter explanation popups
 └── utils/
-    ├── SaveManager.ts        # LocalStorage persistence
-    └── Constants.ts          # Game constants
+    ├── SaveManager.ts        # LocalStorage persistence + popup tracking
+    ├── MusicManager.ts       # Centralized music control (play, stop, fadeOut)
+    └── Constants.ts          # Game constants, scene names, level IDs
 
-public/assets/sprites/
-├── maisha.png + maisha.json  # Player atlas (idle, run, jump, hurt, victory)
-├── mayo.png + mayo.json      # Collectible atlas (bobbing animation)
-└── wasp.png + wasp.json      # Enemy atlas (flying animation)
+public/assets/
+├── sprites/                   # Character & object sprite atlases
+├── music/                     # Kevin MacLeod MP3 tracks (CC BY 3.0)
+└── ...
 ```
 
 ## Sprite Assets
@@ -96,7 +105,35 @@ Levels are defined in `src/scenes/levels/LevelConfig.ts`:
 
 ## Sound System
 
-Uses Web Audio API directly for synthesized sounds:
+### Synthesized SFX (Web Audio API)
 - Mayo collect: Rising sine wave
 - Checkpoint activate: Rising chime sequence
-- Wasp death: Descending square wave
+- Enemy death: Descending square wave
+- Fall death: Descending tone
+
+### Music (Kevin MacLeod, CC BY 3.0)
+Managed via `MusicManager.ts` singleton:
+- Menu: "Airship Serenity"
+- Worthing: "Beach Party"
+- Brighton: "Bit Quest"
+- Varndean: "Amazing Plan"
+- UCL: "Airport Lounge"
+- Civil Service: "Americana"
+- Boss Battle: "8bit Dungeon Boss"
+- Exam Challenge: "8bit Dungeon Level"
+- Credits: "And Awaken"
+- Victory: "Pixelland"
+
+## Enemy Types
+
+| Enemy | Level | Behavior |
+|-------|-------|----------|
+| Wasp | 1-5 | Patrol/chase, defeatable by stomp |
+| Seagull | 2 | Dive-bomb attacks from above |
+| Drunk Student | 4 | Unpredictable stumbling |
+| Bureaucrat | 5 | Slow pursuit, speech bubbles |
+| Giant Wasp | 5 (Boss) | 2 phases, 20 HP, multiple attack patterns |
+
+## Known Issues
+
+- Back to main menu from HUD can cause frozen screen (workaround: refresh browser)

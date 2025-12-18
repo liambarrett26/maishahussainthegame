@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SCENES, GAME_WIDTH, GAME_HEIGHT, LEVELS } from '../utils/Constants';
 import { SaveManager } from '../utils/SaveManager';
+import { MusicManager } from '../utils/MusicManager';
 import { Player } from '../objects/Player';
 import { HUD } from '../ui/HUD';
 import { InfoPopup, INFO_POPUPS } from '../ui/InfoPopup';
@@ -49,6 +50,7 @@ export class GameScene extends Phaser.Scene {
 
   private currentLevel!: LevelData;
   private levelComplete: boolean = false;
+  private mayoCollectedThisLevel: number = 0;
   private infoPopup!: InfoPopup;
   private levelStartTime: number = 0;
   private introPlaying: boolean = false;
@@ -59,6 +61,7 @@ export class GameScene extends Phaser.Scene {
 
   init(): void {
     this.levelComplete = false;
+    this.mayoCollectedThisLevel = 0;
     this.introPlaying = false;
     this.mayoJars = [];
     this.bats = [];
@@ -82,8 +85,11 @@ export class GameScene extends Phaser.Scene {
     const levelId = saveData.currentLevel || LEVELS.WORTHING;
     this.currentLevel = LEVEL_DATA[levelId] || LEVEL_DATA[LEVELS.WORTHING];
 
-    // Set up world bounds
-    this.physics.world.setBounds(0, 0, this.currentLevel.width, this.currentLevel.height);
+    // Play level-specific music
+    MusicManager.playForLevel(this, this.currentLevel.id);
+
+    // Set up world bounds (extend height to allow falling into pits for death)
+    this.physics.world.setBounds(0, 0, this.currentLevel.width, this.currentLevel.height + 100);
 
     // Create background
     this.createBackground();
@@ -144,6 +150,9 @@ export class GameScene extends Phaser.Scene {
       this.mayoBlaster = new MayoBlaster(this, this.player);
       this.mayoBlaster.equip();
     }
+
+    // Load persistent mayo count from previous levels
+    this.player.mayoCount = SaveManager.getMayoCount();
 
     // Set follow target for previously collected friends
     this.followingFriends.forEach((friend, index) => {
@@ -1521,7 +1530,11 @@ export class GameScene extends Phaser.Scene {
     const width = config.width || 50;
     const startY = config.y;
     const endY = config.y - (config.moveDistance || 40);
-    const speed = (config.moveSpeed || 2000) / 1000; // Convert to pixels per second
+    const distance = Math.abs(endY - startY);
+    // moveSpeed is duration in ms for one direction - lower = faster
+    // Calculate velocity: pixels per second = distance / (moveSpeed/1000)
+    const moveSpeedMs = config.moveSpeed || 1000;
+    const velocityPerSecond = (distance / moveSpeedMs) * 1000;
 
     const platform = this.add.rectangle(config.x, startY, width, 12, 0x9b59b6);
     this.physics.add.existing(platform, false);
@@ -1542,19 +1555,17 @@ export class GameScene extends Phaser.Scene {
       highlight,
       startY,
       endY,
-      speed: Math.abs(endY - startY) / speed,
+      speed: velocityPerSecond, // pixels per second
       direction: -1,
     });
   }
 
-  private updateMovingPlatforms(delta: number): void {
+  private updateMovingPlatforms(_delta: number): void {
     this.movingPlatformData.forEach((data) => {
       const body = data.platform.body as Phaser.Physics.Arcade.Body;
 
-      // Calculate velocity based on direction
-      const pixelsPerFrame = (Math.abs(data.endY - data.startY) / data.speed) * (delta / 1000);
-      const velocity = data.direction * pixelsPerFrame * 60;
-
+      // Set velocity directly (speed is pixels per second)
+      const velocity = data.direction * data.speed;
       body.setVelocityY(velocity);
 
       // Update highlight position
@@ -2106,7 +2117,9 @@ export class GameScene extends Phaser.Scene {
 
           mayo.collect(() => {
             this.player.collectMayo();
+            this.mayoCollectedThisLevel += 1;
             SaveManager.collectMayo(this.currentLevel.id, mayo.mayoId);
+            SaveManager.addMayo(1); // Persist mayo count across levels
 
             // Show info popup on first ever mayo collection
             if (isFirstMayo) {
@@ -2709,6 +2722,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private showBossIntro(): void {
+    // Switch to boss battle music
+    MusicManager.playBoss(this);
+
     // Dramatic boss intro
     this.cameras.main.flash(500, 255, 0, 0);
     this.cameras.main.shake(500, 0.02);
@@ -2861,6 +2877,9 @@ export class GameScene extends Phaser.Scene {
   private onBossDefeated(): void {
     this.bossDefeated = true;
     this.boss = null;
+
+    // Switch to victory/credits music
+    MusicManager.playCredits(this);
 
     // Unlock camera bounds
     this.cameras.main.setBounds(0, 0, this.currentLevel.width, this.currentLevel.height);
@@ -3083,14 +3102,12 @@ export class GameScene extends Phaser.Scene {
     // Mark as dead to prevent multiple triggers
     (this.player as unknown as { isDead: boolean }).isDead = true;
 
-    // Quick fade to black
-    this.cameras.main.fadeOut(200, 0, 0, 0);
-
     // Play falling sound
     this.playFallSound();
 
-    // Show game over after fade
-    this.cameras.main.once('camerafadeoutcomplete', () => {
+    // Don't use camera fade - just show game over directly after a short delay
+    // Camera fade causes issues because it sets camera alpha to 0
+    this.time.delayedCall(200, () => {
       this.showGameOver();
     });
   }
@@ -3130,6 +3147,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   showGameOver(): void {
+    // Reset camera to ensure it's visible (in case of any fade effects)
+    this.cameras.main.resetFX();
+    this.cameras.main.setAlpha(1);
+
     // Full black overlay
     const overlay = this.add.graphics();
     overlay.fillStyle(0x000000, 1);
@@ -3291,22 +3312,8 @@ export class GameScene extends Phaser.Scene {
       });
 
       continueZone.on('pointerdown', () => {
-        // Clean up game over UI
-        overlay.destroy();
-        title.destroy();
-        sadFace.destroy();
-        continueBtn.destroy();
-        continueText.destroy();
-        menuBtn.destroy();
-        menuText.destroy();
-        if (continueZone) continueZone.destroy();
-        if (menuZone) menuZone.destroy();
-
-        // Respawn player at checkpoint
-        this.respawnPlayer();
-
-        // Fade back in
-        this.cameras.main.fadeIn(500, 0, 0, 0);
+        // Restart the entire scene to reset all enemies and state
+        this.scene.restart();
       });
 
       // Menu button interactive zone
@@ -3330,10 +3337,8 @@ export class GameScene extends Phaser.Scene {
       });
 
       menuZone.on('pointerdown', () => {
-        this.cameras.main.fadeOut(300, 0, 0, 0);
-        this.cameras.main.once('camerafadeoutcomplete', () => {
-          this.scene.start(SCENES.MENU);
-        });
+        // Go directly to menu without fade (fade causes black screen issues)
+        this.scene.start(SCENES.MENU);
       });
     });
   }
@@ -3709,7 +3714,7 @@ export class GameScene extends Phaser.Scene {
       timeText.setDepth(101);
 
       // Mayo count
-      const mayoText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 5, `Mayo: ${this.player.mayoCount}/${this.currentLevel.mayoJars.length}`, {
+      const mayoText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 5, `Mayo: ${this.mayoCollectedThisLevel}/${this.currentLevel.mayoJars.length}`, {
         fontSize: '14px',
         color: '#ffffff',
         fontFamily: 'monospace',

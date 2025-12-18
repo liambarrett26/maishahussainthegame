@@ -142,10 +142,10 @@ export const WORTHING_LEVEL: LevelData = {
     { x: 2050, y: 130, width: 60, type: 'platform' },
     { x: 2200, y: 100, width: 80, type: 'platform' },
 
-    // Moving platforms
-    { x: 400, y: 180, width: 50, type: 'moving', moveDistance: 40, moveSpeed: 1500 },
-    { x: 1000, y: 160, width: 50, type: 'moving', moveDistance: 50, moveSpeed: 2000 },
-    { x: 1700, y: 140, width: 50, type: 'moving', moveDistance: 60, moveSpeed: 1800 },
+    // Moving platforms (faster speed = lower number)
+    { x: 400, y: 180, width: 50, type: 'moving', moveDistance: 40, moveSpeed: 400 },
+    { x: 1000, y: 160, width: 50, type: 'moving', moveDistance: 50, moveSpeed: 500 },
+    { x: 1700, y: 140, width: 50, type: 'moving', moveDistance: 60, moveSpeed: 450 },
   ],
   mayoJars: [
     { x: 150, y: 150, id: 'mayo_1' },
@@ -183,8 +183,9 @@ export const WORTHING_LEVEL: LevelData = {
   ],
   checkpoints: [
     // Moved away from nearby wasp at x=780
-    { x: 850, y: 238, id: 'cp_1' },
-    { x: 1500, y: 238, id: 'cp_2' },
+    // y=200 to spawn above ground (ground is at y=238)
+    { x: 850, y: 200, id: 'cp_1' },
+    { x: 1500, y: 200, id: 'cp_2' },
   ],
   decorations: [
     { x: 80, y: 238, type: 'shell' },
@@ -251,10 +252,10 @@ export const BRIGHTON_LEVEL: LevelData = {
     { x: 1500, y: 120, width: 70, type: 'platform' },
     { x: 1650, y: 80, width: 60, type: 'platform' },
 
-    // Carousel section (moving platforms)
-    { x: 1800, y: 180, width: 50, type: 'moving', moveDistance: 50, moveSpeed: 1500 },
-    { x: 1900, y: 140, width: 50, type: 'moving', moveDistance: 60, moveSpeed: 1800 },
-    { x: 2000, y: 100, width: 50, type: 'moving', moveDistance: 40, moveSpeed: 1200 },
+    // Carousel section (moving platforms - faster)
+    { x: 1800, y: 180, width: 50, type: 'moving', moveDistance: 50, moveSpeed: 750 },
+    { x: 1900, y: 140, width: 50, type: 'moving', moveDistance: 60, moveSpeed: 900 },
+    { x: 2000, y: 100, width: 50, type: 'moving', moveDistance: 40, moveSpeed: 600 },
 
     // Final stretch
     { x: 2100, y: 160, width: 60, type: 'platform' },
@@ -306,8 +307,9 @@ export const BRIGHTON_LEVEL: LevelData = {
   ],
   checkpoints: [
     // Moved away from wasp at x=920, and cp_2 moved from gap edge at 1850
-    { x: 1000, y: 238, id: 'b_cp_1' },
-    { x: 1700, y: 238, id: 'b_cp_2' },
+    // y=200 to spawn above ground (ground is at y=238)
+    { x: 1000, y: 200, id: 'b_cp_1' },
+    { x: 1700, y: 200, id: 'b_cp_2' },
   ],
   decorations: [
     { x: 120, y: 238, type: 'rock' },
@@ -382,8 +384,8 @@ export const VARNDEAN_LEVEL: LevelData = {
     { x: 1200, y: 90, width: 70, type: 'platform' },
     // Reading nook
     { x: 1300, y: 170, width: 80, type: 'platform' },
-    // Moving ladder
-    { x: 1150, y: 100, width: 40, type: 'moving', moveDistance: 50, moveSpeed: 2000 },
+    // Moving ladder (faster)
+    { x: 1150, y: 100, width: 40, type: 'moving', moveDistance: 50, moveSpeed: 1000 },
 
     // === PLAYING FIELD (1450-1900) ===
     { x: 1450, y: 238, width: 450, type: 'ground' },
@@ -449,10 +451,11 @@ export const VARNDEAN_LEVEL: LevelData = {
   ],
   checkpoints: [
     // Moved away from gap edges and enemies
-    { x: 400, y: 238, id: 'v_cp_1' },    // Corridor - away from gap at 500
-    { x: 750, y: 238, id: 'v_cp_2' },    // Classroom - mid-section
-    { x: 1250, y: 238, id: 'v_cp_3' },   // Library - away from gap at 1400
-    { x: 1700, y: 238, id: 'v_cp_4' },   // Playing field - center
+    // y=200 to spawn above ground (ground is at y=238)
+    { x: 400, y: 200, id: 'v_cp_1' },    // Corridor - away from gap at 500
+    { x: 750, y: 200, id: 'v_cp_2' },    // Classroom - mid-section
+    { x: 1250, y: 200, id: 'v_cp_3' },   // Library - away from gap at 1400
+    { x: 1700, y: 200, id: 'v_cp_4' },   // Playing field - center
   ],
   decorations: [
     // These will be supplemented by school structures in GameScene
@@ -538,8 +541,8 @@ export const UCL_LEVEL: LevelData = {
     { x: 2600, y: 180, width: 60, type: 'platform' },
     { x: 2700, y: 140, width: 50, type: 'platform' },
     { x: 2800, y: 100, width: 70, type: 'platform' },
-    // Moving platform (bus!)
-    { x: 2900, y: 170, width: 60, type: 'moving', moveDistance: 80, moveSpeed: 2500 },
+    // Moving platform (bus! - faster)
+    { x: 2900, y: 170, width: 60, type: 'moving', moveDistance: 80, moveSpeed: 1200 },
     // Final stretch
     { x: 3000, y: 150, width: 50, type: 'platform' },
     { x: 3100, y: 180, width: 60, type: 'platform' },
@@ -578,10 +581,11 @@ export const UCL_LEVEL: LevelData = {
   ],
   seagulls: [], // No seagulls in London
   checkpoints: [
-    { x: 500, y: 238, id: 'u_cp_1' },
-    { x: 1150, y: 238, id: 'u_cp_2' },
-    { x: 1850, y: 238, id: 'u_cp_3' },
-    { x: 2500, y: 238, id: 'u_cp_4' },
+    // y=200 to spawn above ground (ground is at y=238)
+    { x: 500, y: 200, id: 'u_cp_1' },
+    { x: 1150, y: 200, id: 'u_cp_2' },
+    { x: 1850, y: 200, id: 'u_cp_3' },
+    { x: 2500, y: 200, id: 'u_cp_4' },
   ],
   decorations: [
     { x: 150, y: 238, type: 'flower' },
@@ -657,8 +661,8 @@ export const CIVIL_SERVICE_LEVEL: LevelData = {
     { x: 1450, y: 160, width: 60, type: 'platform' },
     { x: 1550, y: 130, width: 50, type: 'platform' },
     { x: 1650, y: 170, width: 70, type: 'platform' },
-    // Moving platform (mail cart)
-    { x: 1750, y: 180, width: 50, type: 'moving', moveDistance: 60, moveSpeed: 2000 },
+    // Moving platform (mail cart - faster)
+    { x: 1750, y: 180, width: 50, type: 'moving', moveDistance: 60, moveSpeed: 1000 },
 
     // === EXECUTIVE FLOOR (1850-2400) ===
     { x: 1850, y: 238, width: 550, type: 'ground' },
@@ -715,11 +719,12 @@ export const CIVIL_SERVICE_LEVEL: LevelData = {
   ],
   seagulls: [], // No seagulls in London offices
   checkpoints: [
-    { x: 550, y: 238, id: 'cs_cp_1' },
-    { x: 1150, y: 238, id: 'cs_cp_2' },
-    { x: 1800, y: 238, id: 'cs_cp_3' },
-    { x: 2400, y: 238, id: 'cs_cp_4' },
-    { x: 2800, y: 238, id: 'cs_cp_boss' }, // Right before boss!
+    // y=200 to spawn above ground (ground is at y=238)
+    { x: 550, y: 200, id: 'cs_cp_1' },
+    { x: 1150, y: 200, id: 'cs_cp_2' },
+    { x: 1800, y: 200, id: 'cs_cp_3' },
+    { x: 2400, y: 200, id: 'cs_cp_4' },
+    { x: 2800, y: 200, id: 'cs_cp_boss' }, // Right before boss!
   ],
   decorations: [
     { x: 150, y: 238, type: 'rock' },

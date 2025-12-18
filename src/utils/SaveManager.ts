@@ -6,6 +6,7 @@ export interface PlayerState {
   hasMayoBlaster: boolean;
   collectedFriends: string[]; // ['liam', 'beth_twine', 'eliza', 'beth_levy']
   baseMaxHealth: number; // Starts at 3, increases with friends
+  currentMayoCount: number; // Usable mayo that persists across levels
 }
 
 export interface SaveData {
@@ -29,6 +30,7 @@ export const DEFAULT_PLAYER_STATE: PlayerState = {
   hasMayoBlaster: false,
   collectedFriends: [],
   baseMaxHealth: 3,
+  currentMayoCount: 0,
 };
 
 const DEFAULT_SAVE: SaveData = {
@@ -152,6 +154,33 @@ export class SaveManager {
 
   static getMaxHealth(): number {
     return this.getPlayerState().baseMaxHealth;
+  }
+
+  // Mayo count methods (persists across levels)
+  static getMayoCount(): number {
+    return this.getPlayerState().currentMayoCount ?? 0;
+  }
+
+  static setMayoCount(count: number): void {
+    const data = this.load();
+    if (!data.playerState) {
+      data.playerState = { ...DEFAULT_PLAYER_STATE };
+    }
+    data.playerState.currentMayoCount = count;
+    this.save(data);
+  }
+
+  static addMayo(amount: number = 1): void {
+    this.setMayoCount(this.getMayoCount() + amount);
+  }
+
+  static useMayo(amount: number): boolean {
+    const current = this.getMayoCount();
+    if (current >= amount) {
+      this.setMayoCount(current - amount);
+      return true;
+    }
+    return false;
   }
 
   // Info popup tracking methods

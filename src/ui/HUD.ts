@@ -10,6 +10,7 @@ export class HUD {
   private mayoMaishaIndicator!: Phaser.GameObjects.Container;
   private mayoMaishaBar!: Phaser.GameObjects.Graphics;
   private mayoMaishaText!: Phaser.GameObjects.Text;
+  private mayoHintText!: Phaser.GameObjects.Text;
   private currentMaxHealth: number = 3;
 
   // Menu button and overlay
@@ -140,6 +141,19 @@ export class HUD {
     });
     this.mayoText.setOrigin(0, 0.5);
     this.container.add(this.mayoText);
+
+    // Mayo usage hints (shown when 10+ mayo)
+    this.mayoHintText = this.scene.add.text(10, 52, 'M = Mayo Mode\nH = Heal', {
+      fontSize: '9px',
+      color: '#ffd700',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 2,
+      lineSpacing: 2,
+    });
+    this.mayoHintText.setVisible(false);
+    this.container.add(this.mayoHintText);
   }
 
   private createMayoMaishaIndicator(): void {
@@ -200,6 +214,10 @@ export class HUD {
         },
       });
     }
+
+    // Show mayo hint when 10+ mayo available
+    const showHint = mayoCount >= 10 && !mayoMaishaActive;
+    this.mayoHintText.setVisible(showHint);
 
     // Update Mayo Maisha indicator
     this.updateMayoMaishaIndicator(mayoMaishaActive, timeRemaining, duration);
@@ -562,10 +580,15 @@ export class HUD {
   }
 
   private quitToMenu(): void {
-    this.closeMenu();
-    this.scene.cameras.main.fadeOut(300, 0, 0, 0);
-    this.scene.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.scene.start(SCENES.MENU);
-    });
+    // Don't call closeMenu - we're leaving the scene entirely
+    // Destroy menu overlay
+    if (this.menuOverlay) {
+      this.menuOverlay.destroy();
+      this.menuOverlay = null;
+    }
+
+    // Stop current game scene and start menu
+    this.scene.scene.stop(SCENES.GAME);
+    this.scene.scene.start(SCENES.MENU);
   }
 }

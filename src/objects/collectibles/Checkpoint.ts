@@ -67,7 +67,9 @@ export class Checkpoint extends Phaser.GameObjects.Container {
   }
 
   private createHitArea(): void {
-    this.hitArea = this.scene.add.zone(this.x, this.y - 20, 32, 48);
+    // Make hit area span full screen height so checkpoint triggers anywhere along y axis
+    const screenHeight = 270; // GAME_HEIGHT
+    this.hitArea = this.scene.add.zone(this.x, screenHeight / 2, 32, screenHeight);
     this.scene.physics.add.existing(this.hitArea, true);
   }
 

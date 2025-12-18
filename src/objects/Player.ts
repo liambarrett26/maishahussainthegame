@@ -7,6 +7,7 @@ import {
   JUMP_BUFFER_TIME,
   INVINCIBILITY_DURATION,
 } from '../utils/Constants';
+import { SaveManager } from '../utils/SaveManager';
 
 type PlayerState = 'idle' | 'run' | 'jump' | 'fall' | 'hurt';
 
@@ -433,6 +434,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Consume mayo
     this.mayoCount -= Player.MAYO_HEAL_COST;
+    SaveManager.useMayo(Player.MAYO_HEAL_COST); // Persist change
 
     // Heal ALL hearts
     this.health = this.maxHealth;
@@ -535,6 +537,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private activateMayoMaisha(): void {
     // Consume mayo
     this.mayoCount -= MAYO_MAISHA_THRESHOLD;
+    SaveManager.useMayo(MAYO_MAISHA_THRESHOLD); // Persist change
 
     this.mayoMaishaActive = true;
     this.mayoMaishaTimer = MAYO_MAISHA_DURATION;

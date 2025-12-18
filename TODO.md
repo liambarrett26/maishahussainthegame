@@ -6,49 +6,42 @@ A personalised 2D pixel art platformer birthday gift for Maisha Hussain.
 
 ---
 
-## CURRENT STATUS: Near Complete!
+## CURRENT STATUS: Complete! 🎉
 
 ### Completed Features:
 - **5 Levels**: Worthing, Brighton, Varndean, UCL London, Civil Service
 - **Enemies**: Wasps, Seagulls, Drunk Students, Bureaucrats (with speech bubbles)
 - **Final Boss**: Giant Wasp at 10 Downing Street (2 phases, 20 HP, multiple attack patterns)
-- **Weapons**: Mayo Blaster (50 ammo, fires mayo projectiles)
+- **Weapons**: Mayo Blaster (fires mayo projectiles)
 - **NPCs**: Friend characters that follow Maisha through levels
 - **Collectibles**: Mayo jars, checkpoints, bats
 - **Polish**: Squash/stretch animations, particle effects, screen shake
 - **Supreme Ruler Victory**: Epic finale with fireworks and fanfare
+- **Music System**: Level-specific background music (Kevin MacLeod, CC BY 3.0)
+- **Info Popups**: First-encounter explanations for enemies and items
+- **Mayo Mode**: Toggle invincibility using collected mayo (M key)
+- **Heal System**: Use collected mayo to heal (H key)
 
 ---
 
 ## REMAINING TASKS
 
-### A. First-Time Encounter Info Popups (Priority: HIGH)
+### A. First-Time Encounter Info Popups ✅ COMPLETE
 
-Add informational popups that pause the game when the player encounters something for the first time. These should explain game mechanics clearly.
+Implemented `InfoPopup` class in `src/ui/InfoPopup.ts`:
+- [x] **Wasp** (Level 1) - "WASP! Jump on its head to defeat it. Avoid touching from the sides!"
+- [x] **Seagull** (Level 2) - "SEAGULL! These dive-bomb from above. Time your jumps carefully!"
+- [x] **Drunk Student** (Level 4) - "DRUNK STUDENT! They stumble unpredictably. Keep your distance!"
+- [x] **Bureaucrat** (Level 5) - "BUREAUCRAT! Slow but persistent. Watch out for red tape!"
+- [x] ~~Giant Wasp~~ (NO popup - boss encounter remains dramatic)
+- [x] **Mayo Blaster Pickup** - "MAYO BLASTER! Press SPACE to fire."
+- [x] **Checkpoint** (first encounter) - "CHECKPOINT! Your progress has been saved."
 
-#### Enemies to add info popups for:
-- [ ] **Wasp** (Level 1) - "WASP! Jump on its head to defeat it. Avoid touching from the sides!"
-- [ ] **Seagull** (Level 2) - "SEAGULL! These dive-bomb from above. Time your jumps carefully!"
-- [ ] **Drunk Student** (Level 4) - "DRUNK STUDENT! They stumble unpredictably. Keep your distance!"
-- [ ] **Bureaucrat** (Level 5) - "BUREAUCRAT! Slow but persistent. Watch out for red tape!"
-- [ ] ~~Giant Wasp~~ (NO popup - boss encounter should feel dramatic, not tutorial-like)
-
-#### Weapons/Items to add info popups for:
-- [ ] **Mayo Blaster Pickup** - "MAYO BLASTER! Press SPACE to fire. 50 shots to help with the boss!"
-- [ ] **Checkpoint** (first encounter) - "CHECKPOINT! Your progress has been saved."
-- [ ] **Bat** (if applicable) - Explain bat functionality
-
-#### Implementation Notes:
-- Create a reusable `InfoPopup` class or method
-- Popup should:
-  - Pause the game (`this.scene.pause()`)
-  - Display semi-transparent overlay
-  - Show enemy/item sprite
-  - Display instructional text
-  - "Press any key to continue" prompt
-  - Resume game on keypress (`this.scene.resume()`)
-- Track shown popups in SaveManager to only show once per playthrough
-- Add `shownInfoPopups: string[]` to save data
+Features:
+- Pauses game during display
+- Semi-transparent overlay with enemy/item sprite
+- "Press ENTER to continue" prompt
+- Tracked in SaveManager (shownPopups array) - only shows once per playthrough
 
 ---
 
@@ -112,7 +105,7 @@ Deploy the game to the wide world web!
 ## Nice-to-Have (Future Enhancements)
 
 ### Polish
-- [ ] Background music for each level
+- [x] Background music for each level ✅ (Kevin MacLeod tracks integrated via MusicManager)
 - [ ] More sound effects variety
 - [ ] Mobile touch controls
 - [ ] Gamepad support
@@ -165,8 +158,8 @@ The game is complete when:
 2. [x] Boss battle is functional and fun
 3. [x] Save/load works correctly
 4. [x] Menu, pause, and credits scenes work
-5. [ ] **Info popups explain new mechanics**
-6. [ ] **Game is deployed and accessible via URL**
+5. [x] **Info popups explain new mechanics**
+6. [x] **Game is deployed and accessible via URL** → [getmashed.games](https://getmashed.games)
 7. It makes Maisha smile!
 
 ---

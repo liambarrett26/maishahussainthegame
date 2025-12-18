@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SCENES, GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants';
+import { MusicManager } from '../utils/MusicManager';
 
 export class CreditsScene extends Phaser.Scene {
   private maisha!: Phaser.GameObjects.Sprite;
@@ -16,6 +17,9 @@ export class CreditsScene extends Phaser.Scene {
 
     // Fade in
     this.cameras.main.fadeIn(500, 0, 0, 0);
+
+    // Play credits music
+    MusicManager.playCredits(this);
 
     // Create beautiful background
     this.createBackground();
@@ -88,6 +92,9 @@ export class CreditsScene extends Phaser.Scene {
       { label: 'Happy Birthday!', value: '' },
       { label: '', value: '' },
       { label: 'From', value: 'Liam and Beth' },
+      { label: '', value: '' },
+      { label: 'Music by', value: 'Kevin MacLeod' },
+      { label: '', value: '(incompetech.com)' },
     ];
 
     let yPos = 70;
@@ -116,9 +123,9 @@ export class CreditsScene extends Phaser.Scene {
       }
     });
 
-    // Special birthday message with heart
-    const heartText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 70, '♥', {
-      fontSize: '20px',
+    // Special birthday message with heart (positioned to not overlap music credit)
+    const heartText = this.add.text(GAME_WIDTH - 120, GAME_HEIGHT - 80, '♥', {
+      fontSize: '24px',
       color: '#e94560',
       fontFamily: 'monospace',
     });
@@ -190,9 +197,10 @@ export class CreditsScene extends Phaser.Scene {
     // Disable further input
     this.input.enabled = false;
 
-    this.cameras.main.fadeOut(300, 0, 0, 0);
-    this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.start(SCENES.MENU);
-    });
+    // Clean up keyboard listeners
+    this.input.keyboard?.removeAllListeners();
+
+    // Just start menu - scene.start automatically handles stopping current scene
+    this.scene.start(SCENES.MENU);
   }
 }

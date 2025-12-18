@@ -2,6 +2,8 @@
 
 A personalised 2D pixel art platformer birthday gift for Maisha Hussain, taking her through the stages of her life from Worthing to the Civil Service.
 
+**🌐 Play Online:** [getmashed.games](https://getmashed.games)
+
 ## 🎂 About
 
 This game was built with love as a birthday present. Join Maisha as she platform-jumps through her life story, collecting mayo jars, avoiding wasps, and facing down memorable bosses along the way.
@@ -9,6 +11,7 @@ This game was built with love as a birthday present. Join Maisha as she platform
 **Genre:** 2D Pixel Art Platformer
 **Engine:** Phaser 3
 **Estimated Playtime:** ~30 minutes
+**Status:** Complete and deployed!
 
 ## 🚀 Quick Start
 
@@ -45,12 +48,15 @@ npm run preview
 
 ## 🎯 Game Controls
 
-| Action | Keyboard | Gamepad |
-|--------|----------|---------|
-| Move Left | `A` or `←` | D-pad Left / Left Stick |
-| Move Right | `D` or `→` | D-pad Right / Left Stick |
-| Jump | `Space` or `W` or `↑` | A Button |
-| Pause | `Escape` | Start |
+| Action | Keyboard |
+|--------|----------|
+| Move Left | `A` or `←` |
+| Move Right | `D` or `→` |
+| Jump | `Space` or `W` or `↑` |
+| Fire Mayo Blaster | `Space` (when equipped) |
+| Mayo Mode | `M` (toggle, uses collected mayo) |
+| Heal | `H` (uses collected mayo) |
+| Pause | `Escape` |
 
 ## 🗺️ Levels
 
@@ -218,8 +224,24 @@ Custom assets and code are shared with love.
 ## 🎉 Credits
 
 - **For:** Maisha Hussain
-- **From:** [Your Name]
+- **From:** Liam
 - **Made With:** Phaser 3, Vite, TypeScript, and many cups of tea
+
+### Music Credits
+
+All music composed by **Kevin MacLeod** ([incompetech.com](https://incompetech.com))
+Licensed under [Creative Commons: By Attribution 3.0](http://creativecommons.org/licenses/by/3.0/)
+
+- Menu: "Airship Serenity"
+- Worthing: "Beach Party"
+- Brighton: "Bit Quest"
+- Varndean: "Amazing Plan"
+- UCL: "Airport Lounge"
+- Civil Service: "Americana"
+- Boss Battle: "8bit Dungeon Boss"
+- Exam Challenge: "8bit Dungeon Level"
+- Credits: "And Awaken"
+- Victory: "Pixelland"
 
 ---
 

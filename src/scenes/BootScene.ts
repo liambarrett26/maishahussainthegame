@@ -88,6 +88,17 @@ export class BootScene extends Phaser.Scene {
     this.load.atlas('nicki', 'assets/sprites/npcs/nicki.png', 'assets/sprites/npcs/nicki.json');
     this.load.atlas('beaker', 'assets/sprites/npcs/beaker.png', 'assets/sprites/npcs/beaker.json');
     this.load.atlas('puddle', 'assets/sprites/npcs/puddle.png', 'assets/sprites/npcs/puddle.json');
+
+    // Music tracks (Kevin MacLeod - Incompetech, CC BY 3.0)
+    this.load.audio('music-menu', 'assets/music/Airship_Serenity.mp3');
+    this.load.audio('music-credits', 'assets/music/And_Awaken.mp3');
+    this.load.audio('music-worthing', 'assets/music/Beach_Party.mp3');
+    this.load.audio('music-brighton', 'assets/music/Bit_Quest.mp3');
+    this.load.audio('music-varndean', 'assets/music/Amazing_Plan.mp3');
+    this.load.audio('music-ucl', 'assets/music/Airport_Lounge.mp3');
+    this.load.audio('music-civil-service', 'assets/music/Americana.mp3');
+    this.load.audio('music-boss', 'assets/music/8bit_Dungeon_Boss.mp3');
+    this.load.audio('music-exam', 'assets/music/8bit_Dungeon_Level.mp3');
   }
 
   create(): void {
