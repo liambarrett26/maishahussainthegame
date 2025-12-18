@@ -126,14 +126,16 @@ export class PauseScene extends Phaser.Scene {
   }
 
   private restartLevel(): void {
-    this.scene.stop(SCENES.GAME);
-    this.scene.start(SCENES.GAME);
-    this.scene.stop();
+    // Use game.scene to ensure proper scene management from overlay
+    this.game.scene.stop(SCENES.PAUSE);
+    this.game.scene.stop(SCENES.GAME);
+    this.game.scene.start(SCENES.GAME);
   }
 
   private quitToMenu(): void {
-    this.scene.stop(SCENES.GAME);
-    this.scene.start(SCENES.MENU);
-    this.scene.stop();
+    // Use game.scene to ensure proper scene management from overlay
+    this.game.scene.stop(SCENES.PAUSE);
+    this.game.scene.stop(SCENES.GAME);
+    this.game.scene.start(SCENES.MENU);
   }
 }

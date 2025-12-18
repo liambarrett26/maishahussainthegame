@@ -340,40 +340,120 @@ export class ExamScene extends Phaser.Scene {
   private playIntro(): void {
     this.cameras.main.fadeIn(500, 0, 0, 0);
 
-    // Intro text
-    const introText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20, 'END OF YEAR EXAMS', {
-      fontSize: '20px',
-      color: '#1a1a8c',
+    // Show instruction popup first
+    this.showInstructionPopup();
+  }
+
+  private showInstructionPopup(): void {
+    // Create overlay
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.8);
+    overlay.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    overlay.setDepth(100);
+
+    // Popup box
+    const boxWidth = 280;
+    const boxHeight = 180;
+    const boxX = (GAME_WIDTH - boxWidth) / 2;
+    const boxY = (GAME_HEIGHT - boxHeight) / 2;
+
+    const popup = this.add.graphics();
+    popup.setDepth(101);
+    // Shadow
+    popup.fillStyle(0x000000, 0.3);
+    popup.fillRoundedRect(boxX + 3, boxY + 3, boxWidth, boxHeight, 10);
+    // Main box
+    popup.fillStyle(0x1a1a8c, 1);
+    popup.fillRoundedRect(boxX, boxY, boxWidth, boxHeight, 10);
+    // Border
+    popup.lineStyle(3, 0xffd700);
+    popup.strokeRoundedRect(boxX, boxY, boxWidth, boxHeight, 10);
+
+    // Title
+    const title = this.add.text(GAME_WIDTH / 2, boxY + 20, 'IB DIPLOMA EXAMS', {
+      fontSize: '16px',
+      color: '#ffd700',
       fontFamily: 'monospace',
       fontStyle: 'bold',
-      stroke: '#ffffff',
-      strokeThickness: 3,
     });
-    introText.setOrigin(0.5);
-    introText.setAlpha(0);
+    title.setOrigin(0.5);
+    title.setDepth(102);
 
-    const subIntro = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 10, 'You need 80% to pass!', {
-      fontSize: '12px',
-      color: '#e74c3c',
+    // Instructions
+    const instructions = [
+      '• Answer 13 questions from your IB subjects',
+      '• Press 1-4 or click to select an answer',
+      '• Press ENTER to confirm your choice',
+      '• You need 80% (11/13) to pass!',
+      '',
+      'Good luck, Maisha!'
+    ];
+
+    const instructionText = this.add.text(GAME_WIDTH / 2, boxY + 55, instructions.join('\n'), {
+      fontSize: '9px',
+      color: '#ffffff',
       fontFamily: 'monospace',
+      lineSpacing: 6,
+      align: 'left',
     });
-    subIntro.setOrigin(0.5);
-    subIntro.setAlpha(0);
+    instructionText.setOrigin(0.5, 0);
+    instructionText.setDepth(102);
 
-    // Animate intro
-    this.tweens.add({
-      targets: [introText, subIntro],
-      alpha: 1,
-      duration: 500,
-      hold: 2000,
-      yoyo: true,
-      onComplete: () => {
-        introText.destroy();
-        subIntro.destroy();
-        this.examStarted = true;
-        this.showQuestion();
-      },
+    // Start button
+    const btnY = boxY + boxHeight - 35;
+    const btn = this.add.graphics();
+    btn.setDepth(102);
+    btn.fillStyle(0x27ae60, 1);
+    btn.fillRoundedRect(GAME_WIDTH / 2 - 60, btnY, 120, 26, 5);
+
+    const btnText = this.add.text(GAME_WIDTH / 2, btnY + 13, 'BEGIN EXAM', {
+      fontSize: '11px',
+      color: '#ffffff',
+      fontFamily: 'monospace',
+      fontStyle: 'bold',
     });
+    btnText.setOrigin(0.5);
+    btnText.setDepth(103);
+
+    // Button interaction
+    const btnZone = this.add.zone(GAME_WIDTH / 2, btnY + 13, 120, 26);
+    btnZone.setInteractive({ useHandCursor: true });
+    btnZone.setDepth(104);
+
+    btnZone.on('pointerover', () => {
+      btn.clear();
+      btn.fillStyle(0x2ecc71, 1);
+      btn.fillRoundedRect(GAME_WIDTH / 2 - 60, btnY, 120, 26, 5);
+      btnText.setColor('#ffd700');
+    });
+
+    btnZone.on('pointerout', () => {
+      btn.clear();
+      btn.fillStyle(0x27ae60, 1);
+      btn.fillRoundedRect(GAME_WIDTH / 2 - 60, btnY, 120, 26, 5);
+      btnText.setColor('#ffffff');
+    });
+
+    const startExam = () => {
+      // Clean up popup
+      overlay.destroy();
+      popup.destroy();
+      title.destroy();
+      instructionText.destroy();
+      btn.destroy();
+      btnText.destroy();
+      btnZone.destroy();
+
+      // Start the exam
+      this.examStarted = true;
+      this.showQuestion();
+    };
+
+    btnZone.on('pointerdown', startExam);
+
+    // Also allow ENTER or SPACE to start
+    this.input.keyboard?.once('keydown-ENTER', startExam);
+    this.input.keyboard?.once('keydown-SPACE', startExam);
   }
 
   private showQuestion(): void {

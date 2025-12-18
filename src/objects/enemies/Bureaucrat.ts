@@ -167,8 +167,8 @@ export class Bureaucrat extends Phaser.Physics.Arcade.Sprite {
       });
     }
 
-    // Random chance to speak while walking
-    if (Math.random() < 0.0005 && this.speechCooldown <= 0) {
+    // Random chance to speak while walking (more frequent for comedic effect)
+    if (Math.random() < 0.002 && this.speechCooldown <= 0) {
       this.showSpeechBubble();
     }
 
@@ -193,7 +193,7 @@ export class Bureaucrat extends Phaser.Physics.Arcade.Sprite {
     // Don't show if one is already visible
     if (this.speechBubble) return;
 
-    this.speechCooldown = 5000; // 5 second cooldown between speeches
+    this.speechCooldown = 3000; // 3 second cooldown between speeches
 
     // Pick a random quote
     const quote = BUREAUCRAT_QUOTES[Math.floor(Math.random() * BUREAUCRAT_QUOTES.length)];

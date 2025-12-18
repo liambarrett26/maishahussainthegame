@@ -3,12 +3,17 @@ import { SCENES, GAME_WIDTH, GAME_HEIGHT } from '../utils/Constants';
 
 export class CreditsScene extends Phaser.Scene {
   private maisha!: Phaser.GameObjects.Sprite;
+  private isTransitioning: boolean = false;
 
   constructor() {
     super({ key: SCENES.CREDITS });
   }
 
   create(): void {
+    // Reset state
+    this.isTransitioning = false;
+    this.input.enabled = true;
+
     // Fade in
     this.cameras.main.fadeIn(500, 0, 0, 0);
 
@@ -178,6 +183,13 @@ export class CreditsScene extends Phaser.Scene {
   }
 
   private goBack(): void {
+    // Prevent double-calls during transition
+    if (this.isTransitioning) return;
+    this.isTransitioning = true;
+
+    // Disable further input
+    this.input.enabled = false;
+
     this.cameras.main.fadeOut(300, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.start(SCENES.MENU);

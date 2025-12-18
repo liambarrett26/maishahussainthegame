@@ -17,6 +17,9 @@ export class MenuScene extends Phaser.Scene {
   private particles!: Phaser.GameObjects.Particles.ParticleEmitter;
   private levelSelectMode: boolean = false;
   private levelSelectContainer?: Phaser.GameObjects.Container;
+  // Mute button temporarily disabled
+  // private muteButton?: Phaser.GameObjects.Container;
+  // private muteIcon?: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: SCENES.MENU });
@@ -46,6 +49,10 @@ export class MenuScene extends Phaser.Scene {
 
     // Create menu buttons
     this.createButtons();
+
+    // Mute button temporarily hidden - will fix later
+    // this.createMuteButton();
+    // this.applyMuteState();
 
     // Set up keyboard navigation
     this.setupKeyboardNav();
@@ -508,28 +515,40 @@ export class MenuScene extends Phaser.Scene {
     devLabel.setOrigin(0.5);
     this.levelSelectContainer.add(devLabel);
 
-    // Level buttons
+    // Level buttons - 2 column layout
     const levels = [
-      { id: LEVELS.WORTHING, name: 'Worthing Beach', color: 0x3498db },
+      { id: LEVELS.WORTHING, name: 'Worthing', color: 0x3498db },
       { id: LEVELS.BRIGHTON, name: 'Brighton', color: 0x9b59b6 },
-      { id: LEVELS.VARNDEAN, name: 'Varndean College', color: 0x27ae60 },
-      { id: LEVELS.UCL, name: 'UCL University', color: 0x500778 },
+      { id: LEVELS.VARNDEAN, name: 'Varndean', color: 0x27ae60 },
+      { id: LEVELS.UCL, name: 'UCL', color: 0x500778 },
       { id: LEVELS.CIVIL_SERVICE, name: 'Civil Service', color: 0x708090 },
       { id: 'exam', name: 'IB Exams', color: 0x1a1a8c },
     ];
 
+    const cols = 2;
+    const btnWidth = 110;
+    const btnHeight = 28;
+    const gapX = 10;
+    const gapY = 8;
+    const startY = 70;
+    const totalWidth = cols * btnWidth + (cols - 1) * gapX;
+    const startX = (GAME_WIDTH - totalWidth) / 2;
+
     levels.forEach((level, index) => {
-      const y = 80 + index * 40;
+      const col = index % cols;
+      const row = Math.floor(index / cols);
+      const x = startX + col * (btnWidth + gapX);
+      const y = startY + row * (btnHeight + gapY);
 
       // Button background
       const btn = this.add.graphics();
       btn.fillStyle(level.color, 1);
-      btn.fillRoundedRect(GAME_WIDTH / 2 - 90, y, 180, 30, 6);
+      btn.fillRoundedRect(x, y, btnWidth, btnHeight, 5);
       this.levelSelectContainer!.add(btn);
 
       // Button text
-      const text = this.add.text(GAME_WIDTH / 2, y + 15, level.name, {
-        fontSize: '12px',
+      const text = this.add.text(x + btnWidth / 2, y + btnHeight / 2, level.name, {
+        fontSize: '10px',
         color: '#ffffff',
         fontFamily: 'monospace',
         fontStyle: 'bold',
@@ -538,7 +557,7 @@ export class MenuScene extends Phaser.Scene {
       this.levelSelectContainer!.add(text);
 
       // Interactive zone
-      const zone = this.add.zone(GAME_WIDTH / 2, y + 15, 180, 30);
+      const zone = this.add.zone(x + btnWidth / 2, y + btnHeight / 2, btnWidth, btnHeight);
       zone.setInteractive({ useHandCursor: true });
       this.levelSelectContainer!.add(zone);
 
@@ -547,15 +566,15 @@ export class MenuScene extends Phaser.Scene {
         btn.clear();
         btn.fillStyle(level.color, 1);
         btn.lineStyle(2, 0xffd93d);
-        btn.fillRoundedRect(GAME_WIDTH / 2 - 90, y, 180, 30, 6);
-        btn.strokeRoundedRect(GAME_WIDTH / 2 - 90, y, 180, 30, 6);
+        btn.fillRoundedRect(x, y, btnWidth, btnHeight, 5);
+        btn.strokeRoundedRect(x, y, btnWidth, btnHeight, 5);
       });
 
       zone.on('pointerout', () => {
         text.setColor('#ffffff');
         btn.clear();
         btn.fillStyle(level.color, 1);
-        btn.fillRoundedRect(GAME_WIDTH / 2 - 90, y, 180, 30, 6);
+        btn.fillRoundedRect(x, y, btnWidth, btnHeight, 5);
       });
 
       zone.on('pointerdown', () => {
@@ -631,4 +650,75 @@ export class MenuScene extends Phaser.Scene {
       this.scene.start(sceneKey);
     });
   }
+
+  // Mute button temporarily disabled - kept for future use
+  /*
+  private createMuteButton(): void {
+    const isMuted = SaveManager.isMuted();
+
+    this.muteButton = this.add.container(GAME_WIDTH - 25, 20);
+    this.muteButton.setDepth(50);
+
+    // Button background
+    const bg = this.add.graphics();
+    bg.fillStyle(0x000000, 0.5);
+    bg.fillRoundedRect(-18, -12, 36, 24, 6);
+    this.muteButton.add(bg);
+
+    // Mute icon (speaker emoji or text)
+    this.muteIcon = this.add.text(0, 0, isMuted ? '🔇' : '🔊', {
+      fontSize: '14px',
+    });
+    this.muteIcon.setOrigin(0.5);
+    this.muteButton.add(this.muteIcon);
+
+    // Make interactive
+    const hitArea = new Phaser.Geom.Rectangle(-18, -12, 36, 24);
+    this.muteButton.setInteractive(hitArea, Phaser.Geom.Rectangle.Contains);
+
+    this.muteButton.on('pointerover', () => {
+      bg.clear();
+      bg.fillStyle(0x333333, 0.7);
+      bg.fillRoundedRect(-18, -12, 36, 24, 6);
+    });
+
+    this.muteButton.on('pointerout', () => {
+      bg.clear();
+      bg.fillStyle(0x000000, 0.5);
+      bg.fillRoundedRect(-18, -12, 36, 24, 6);
+    });
+
+    this.muteButton.on('pointerdown', () => {
+      this.toggleMute();
+    });
+
+    // M key to toggle mute
+    this.input.keyboard?.on('keydown-M', () => {
+      this.toggleMute();
+    });
+  }
+
+  private toggleMute(): void {
+    const newMuted = SaveManager.toggleMute();
+    if (this.muteIcon) {
+      this.muteIcon.setText(newMuted ? '🔇' : '🔊');
+    }
+    this.applyMuteState();
+
+    // Visual feedback
+    if (this.muteButton) {
+      this.tweens.add({
+        targets: this.muteButton,
+        scale: 1.2,
+        duration: 100,
+        yoyo: true,
+      });
+    }
+  }
+
+  private applyMuteState(): void {
+    const isMuted = SaveManager.isMuted();
+    this.sound.mute = isMuted;
+  }
+  */
 }

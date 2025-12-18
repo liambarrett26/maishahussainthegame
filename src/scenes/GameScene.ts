@@ -3,6 +3,7 @@ import { SCENES, GAME_WIDTH, GAME_HEIGHT, LEVELS } from '../utils/Constants';
 import { SaveManager } from '../utils/SaveManager';
 import { Player } from '../objects/Player';
 import { HUD } from '../ui/HUD';
+import { InfoPopup, INFO_POPUPS } from '../ui/InfoPopup';
 import { MayoJar } from '../objects/collectibles/MayoJar';
 import { Checkpoint } from '../objects/collectibles/Checkpoint';
 import { Bat } from '../objects/collectibles/Bat';
@@ -48,6 +49,7 @@ export class GameScene extends Phaser.Scene {
 
   private currentLevel!: LevelData;
   private levelComplete: boolean = false;
+  private infoPopup!: InfoPopup;
   private levelStartTime: number = 0;
   private introPlaying: boolean = false;
 
@@ -137,6 +139,12 @@ export class GameScene extends Phaser.Scene {
       this.player.equipBat();
     }
 
+    // Equip Mayo Blaster if player already has it from UCL graduation
+    if (SaveManager.hasMayoBlaster()) {
+      this.mayoBlaster = new MayoBlaster(this, this.player);
+      this.mayoBlaster.equip();
+    }
+
     // Set follow target for previously collected friends
     this.followingFriends.forEach((friend, index) => {
       friend.setFollowTarget(this.player, index);
@@ -166,6 +174,9 @@ export class GameScene extends Phaser.Scene {
     // Create HUD
     this.hud = new HUD(this, this.player.maxHealth);
 
+    // Create info popup system
+    this.infoPopup = new InfoPopup(this);
+
     // Set up collisions
     this.setupCollisions();
 
@@ -174,6 +185,17 @@ export class GameScene extends Phaser.Scene {
 
     // Create level name display
     this.showLevelName();
+
+    // Show Mayo Blaster info popup at Civil Service level start (if player has it)
+    if (this.currentLevel.id === LEVELS.CIVIL_SERVICE && SaveManager.hasMayoBlaster()) {
+      if (!SaveManager.hasShownInfoPopup('mayo_blaster_civil')) {
+        // Short delay to let level name appear first
+        this.time.delayedCall(1500, () => {
+          this.showInfoPopup('mayo_blaster');
+          SaveManager.markInfoPopupShown('mayo_blaster_civil');
+        });
+      }
+    }
 
     // Track level start time
     this.levelStartTime = this.time.now;
@@ -1731,35 +1753,91 @@ export class GameScene extends Phaser.Scene {
         this.mayoBlaster.fire();
       }
 
-      // Check projectile collisions with boss
-      if (this.boss && !this.bossDefeated) {
-        const projectiles = this.mayoBlaster.getProjectiles();
-        const bossBounds = this.boss.getBounds();
-
-        projectiles.forEach((projectile) => {
-          if (projectile.isAlive()) {
-            const projBounds = new Phaser.Geom.Rectangle(
-              projectile.x - 8,
-              projectile.y - 8,
-              16,
-              16
-            );
-
-            if (Phaser.Geom.Rectangle.Overlaps(projBounds, bossBounds)) {
-              // Hit the boss!
-              projectile.hit();
-
-              if (!this.boss!.isInvulnerable()) {
-                this.boss!.takeDamage();
-
-                // Show damage number
-                this.showBossDamageNumber(projectile.x, projectile.y);
-              }
-            }
-          }
-        });
-      }
+      // Check projectile collisions with ALL enemies
+      this.checkMayoProjectileCollisions();
     }
+  }
+
+  private checkMayoProjectileCollisions(): void {
+    if (!this.mayoBlaster) return;
+
+    const projectiles = this.mayoBlaster.getProjectiles();
+
+    projectiles.forEach((projectile) => {
+      if (!projectile.isAlive()) return;
+
+      const projBounds = new Phaser.Geom.Rectangle(
+        projectile.x - 8,
+        projectile.y - 8,
+        16,
+        16
+      );
+
+      // Check vs boss
+      if (this.boss && !this.bossDefeated) {
+        const bossBounds = this.boss.getBounds();
+        if (Phaser.Geom.Rectangle.Overlaps(projBounds, bossBounds)) {
+          projectile.hit();
+          if (!this.boss!.isInvulnerable()) {
+            this.boss!.takeDamage();
+            this.showBossDamageNumber(projectile.x, projectile.y);
+          }
+          return;
+        }
+      }
+
+      // Check vs wasps
+      for (const wasp of this.wasps) {
+        if (wasp.isAlive()) {
+          const waspBounds = wasp.getBounds();
+          if (Phaser.Geom.Rectangle.Overlaps(projBounds, waspBounds)) {
+            projectile.hit();
+            wasp.stomp();
+            this.showBossDamageNumber(projectile.x, projectile.y);
+            return;
+          }
+        }
+      }
+
+      // Check vs seagulls
+      for (const seagull of this.seagulls) {
+        if (seagull.isAlive()) {
+          const seagullBounds = seagull.getBounds();
+          if (Phaser.Geom.Rectangle.Overlaps(projBounds, seagullBounds)) {
+            projectile.hit();
+            seagull.stomp();
+            this.showBossDamageNumber(projectile.x, projectile.y);
+            return;
+          }
+        }
+      }
+
+      // Check vs drunk students
+      for (const student of this.drunkStudents) {
+        if (student.isAlive()) {
+          const studentBounds = student.getBounds();
+          if (Phaser.Geom.Rectangle.Overlaps(projBounds, studentBounds)) {
+            projectile.hit();
+            student.stomp();
+            this.showBossDamageNumber(projectile.x, projectile.y);
+            return;
+          }
+        }
+      }
+
+      // Check vs bureaucrats
+      for (const bureaucrat of this.bureaucrats) {
+        if (bureaucrat.isAlive()) {
+          const bureaucratBounds = bureaucrat.getBounds();
+          if (Phaser.Geom.Rectangle.Overlaps(projBounds, bureaucratBounds)) {
+            projectile.hit();
+            bureaucrat.stomp();
+            this.showBossDamageNumber(projectile.x, projectile.y);
+            return;
+          }
+        }
+      }
+    });
   }
 
   private showBossDamageNumber(x: number, y: number): void {
@@ -1783,6 +1861,104 @@ export class GameScene extends Phaser.Scene {
       ease: 'Quad.easeOut',
       onComplete: () => damageText.destroy(),
     });
+  }
+
+  private checkFirstEncounters(): void {
+    // Don't check if a popup is already showing
+    if (this.infoPopup.isVisible()) return;
+
+    const playerX = this.player.x;
+    const playerY = this.player.y;
+    const encounterDistance = 120; // Distance to trigger popup
+
+    // Check wasps
+    if (!SaveManager.hasShownInfoPopup('wasp')) {
+      for (const wasp of this.wasps) {
+        if (wasp.active) {
+          const dist = Phaser.Math.Distance.Between(playerX, playerY, wasp.x, wasp.y);
+          if (dist < encounterDistance) {
+            this.showInfoPopup('wasp');
+            return;
+          }
+        }
+      }
+    }
+
+    // Check seagulls
+    if (!SaveManager.hasShownInfoPopup('seagull')) {
+      for (const seagull of this.seagulls) {
+        if (seagull.active) {
+          const dist = Phaser.Math.Distance.Between(playerX, playerY, seagull.x, seagull.y);
+          if (dist < encounterDistance) {
+            this.showInfoPopup('seagull');
+            return;
+          }
+        }
+      }
+    }
+
+    // Check drunk students
+    if (!SaveManager.hasShownInfoPopup('drunk_student')) {
+      for (const student of this.drunkStudents) {
+        if (student.active) {
+          const dist = Phaser.Math.Distance.Between(playerX, playerY, student.x, student.y);
+          if (dist < encounterDistance) {
+            this.showInfoPopup('drunk_student');
+            return;
+          }
+        }
+      }
+    }
+
+    // Check bureaucrats
+    if (!SaveManager.hasShownInfoPopup('bureaucrat')) {
+      for (const bureaucrat of this.bureaucrats) {
+        if (bureaucrat.active) {
+          const dist = Phaser.Math.Distance.Between(playerX, playerY, bureaucrat.x, bureaucrat.y);
+          if (dist < encounterDistance) {
+            this.showInfoPopup('bureaucrat');
+            return;
+          }
+        }
+      }
+    }
+
+    // Check checkpoints (only first one ever)
+    if (!SaveManager.hasShownInfoPopup('checkpoint')) {
+      for (const checkpoint of this.checkpoints) {
+        if (!checkpoint.isActivated()) {
+          const dist = Phaser.Math.Distance.Between(playerX, playerY, checkpoint.x, checkpoint.y);
+          if (dist < encounterDistance) {
+            this.showInfoPopup('checkpoint');
+            return;
+          }
+        }
+      }
+    }
+
+    // Check mayo blaster pickup
+    if (!SaveManager.hasShownInfoPopup('mayo_blaster') && this.mayoBlasterPickup) {
+      if (!this.mayoBlasterPickup.isCollected()) {
+        const dist = Phaser.Math.Distance.Between(
+          playerX,
+          playerY,
+          this.mayoBlasterPickup.x,
+          this.mayoBlasterPickup.y
+        );
+        if (dist < encounterDistance) {
+          this.showInfoPopup('mayo_blaster');
+          return;
+        }
+      }
+    }
+  }
+
+  private showInfoPopup(popupId: string): void {
+    const config = INFO_POPUPS[popupId];
+    if (!config) return;
+
+    SaveManager.markInfoPopupShown(popupId);
+    this.infoPopup.show(config);
   }
 
   private createNumber10Door(x: number, y: number): void {
@@ -1925,9 +2101,17 @@ export class GameScene extends Phaser.Scene {
     this.mayoJars.forEach((mayo) => {
       this.physics.add.overlap(this.player, mayo, () => {
         if (!mayo.isCollected()) {
+          // Check if this is the first ever mayo collection (before collecting)
+          const isFirstMayo = !SaveManager.hasShownInfoPopup('mayo');
+
           mayo.collect(() => {
             this.player.collectMayo();
             SaveManager.collectMayo(this.currentLevel.id, mayo.mayoId);
+
+            // Show info popup on first ever mayo collection
+            if (isFirstMayo) {
+              this.showInfoPopup('mayo');
+            }
           });
         }
       });
@@ -1940,6 +2124,11 @@ export class GameScene extends Phaser.Scene {
           bat.collect(() => {
             this.player.equipBat();
             SaveManager.collectBat(); // Persist bat ownership
+
+            // Show info popup on bat collection
+            if (!SaveManager.hasShownInfoPopup('bat')) {
+              this.showInfoPopup('bat');
+            }
           });
         }
       });
@@ -2142,6 +2331,17 @@ export class GameScene extends Phaser.Scene {
         }
       });
     });
+
+    // Bat attack vs drunk students
+    this.drunkStudents.forEach((student) => {
+      this.physics.add.overlap(hitbox, student, () => {
+        if (this.player.isCurrentlyAttacking() && student.isAlive()) {
+          student.stomp();
+          this.player.playBatHitSound();
+          this.createBatHitEffect(student.x, student.y);
+        }
+      });
+    });
   }
 
   private createBatHitEffect(x: number, y: number): void {
@@ -2212,6 +2412,12 @@ export class GameScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     if (this.levelComplete || this.introPlaying) return;
+
+    // Check for first-time enemy/item encounters
+    this.checkFirstEncounters();
+
+    // Skip rest of update if popup is showing
+    if (this.infoPopup.isVisible()) return;
 
     this.player.update(this.cursors);
     this.hud.update(
@@ -3270,11 +3476,59 @@ export class GameScene extends Phaser.Scene {
         });
       }
 
-      // Fade to black and show level complete
-      this.time.delayedCall(2500, () => {
-        congratsText.destroy();
-        degreeText.destroy();
-        this.showLevelComplete(timeElapsed);
+      // Award Mayo Blaster as graduation gift!
+      this.time.delayedCall(2000, () => {
+        // Check if already has it
+        if (!SaveManager.hasMayoBlaster()) {
+          SaveManager.collectMayoBlaster();
+
+          // Show Mayo Blaster award
+          const blasterText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 10, 'GRADUATION GIFT: MAYO BLASTER!', {
+            fontSize: '11px',
+            color: '#ffeaa7',
+            fontFamily: 'monospace',
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 2,
+          });
+          blasterText.setOrigin(0.5);
+          blasterText.setScrollFactor(0);
+          blasterText.setDepth(101);
+
+          const blasterDesc = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 28, 'Press SPACE to fire mayo at enemies!', {
+            fontSize: '8px',
+            color: '#ffffff',
+            fontFamily: 'monospace',
+          });
+          blasterDesc.setOrigin(0.5);
+          blasterDesc.setScrollFactor(0);
+          blasterDesc.setDepth(101);
+
+          // Pulse effect
+          this.tweens.add({
+            targets: blasterText,
+            scale: 1.1,
+            duration: 300,
+            yoyo: true,
+            repeat: 2,
+          });
+
+          // Clean up and continue after showing blaster message
+          this.time.delayedCall(2500, () => {
+            congratsText.destroy();
+            degreeText.destroy();
+            blasterText.destroy();
+            blasterDesc.destroy();
+            this.showLevelComplete(timeElapsed);
+          });
+        } else {
+          // Already has blaster, just continue
+          this.time.delayedCall(500, () => {
+            congratsText.destroy();
+            degreeText.destroy();
+            this.showLevelComplete(timeElapsed);
+          });
+        }
       });
     });
   }

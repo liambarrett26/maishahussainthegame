@@ -614,6 +614,7 @@ export const UCL_LEVEL: LevelData = {
     // Beth Levy - in the UCL quad area
     { x: 1550, y: 210, id: 'beth_levy' },
   ],
+  // Mayo Blaster is now awarded on graduation (see GameScene.playGraduationCeremony)
   endX: 3150,
   nextLevel: LEVELS.CIVIL_SERVICE,
 };
@@ -748,8 +749,6 @@ export const CIVIL_SERVICE_LEVEL: LevelData = {
     // No bureaucrats near boss arena
   ],
   friends: [], // No friends needed - this is the final level!
-  // Mayo Blaster pickup - right before the boss arena!
-  mayoBlasterPickup: { x: 2780, y: 200 },
   // BOSS: The Giant Wasp at 10 Downing Street!
   boss: {
     type: 'giant_wasp',

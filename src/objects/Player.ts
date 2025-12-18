@@ -377,7 +377,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   collectMayo(): void {
     this.mayoCount += 1;
 
-    // Brief scale pop effect
+    // Brief scale pop effect - no auto-heal, player must use H key
     this.scene.tweens.add({
       targets: this,
       scaleX: 1.15,
@@ -386,6 +386,32 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       yoyo: true,
       ease: 'Quad.easeOut',
     });
+
+    // Sparkle effect to show collection
+    this.createMayoCollectParticles();
+  }
+
+  private createMayoCollectParticles(): void {
+    if (!this.scene.textures.exists('mayo-sparkle')) {
+      const graphics = this.scene.add.graphics();
+      graphics.fillStyle(0xfff8dc, 1);
+      graphics.fillCircle(2, 2, 2);
+      graphics.generateTexture('mayo-sparkle', 4, 4);
+      graphics.destroy();
+    }
+
+    const particles = this.scene.add.particles(this.x, this.y - 10, 'mayo-sparkle', {
+      speed: { min: 30, max: 60 },
+      angle: { min: 220, max: 320 },
+      scale: { start: 1, end: 0 },
+      alpha: { start: 1, end: 0 },
+      lifespan: 400,
+      quantity: 6,
+      emitting: false,
+    });
+
+    particles.explode();
+    this.scene.time.delayedCall(500, () => particles.destroy());
   }
 
   heal(amount: number = 1): void {
@@ -408,8 +434,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Consume mayo
     this.mayoCount -= Player.MAYO_HEAL_COST;
 
-    // Heal one heart
-    this.health = Math.min(this.health + 1, this.maxHealth);
+    // Heal ALL hearts
+    this.health = this.maxHealth;
 
     // Visual/audio feedback
     this.playHealEffect();

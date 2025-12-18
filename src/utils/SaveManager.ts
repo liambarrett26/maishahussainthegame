@@ -3,6 +3,7 @@ import { SAVE_KEY, LEVELS } from './Constants';
 // Persistent player state - survives across levels
 export interface PlayerState {
   hasBat: boolean;
+  hasMayoBlaster: boolean;
   collectedFriends: string[]; // ['liam', 'beth_twine', 'eliza', 'beth_levy']
   baseMaxHealth: number; // Starts at 3, increases with friends
 }
@@ -15,14 +16,17 @@ export interface SaveData {
   totalMayo: number;
   bestTimes: Record<string, number>;
   playerState: PlayerState;
+  shownInfoPopups: string[];
   settings: {
     musicVolume: number;
     sfxVolume: number;
+    muted: boolean;
   };
 }
 
 export const DEFAULT_PLAYER_STATE: PlayerState = {
   hasBat: false,
+  hasMayoBlaster: false,
   collectedFriends: [],
   baseMaxHealth: 3,
 };
@@ -35,9 +39,11 @@ const DEFAULT_SAVE: SaveData = {
   totalMayo: 0,
   bestTimes: {},
   playerState: { ...DEFAULT_PLAYER_STATE },
+  shownInfoPopups: [],
   settings: {
     musicVolume: 0.7,
     sfxVolume: 1.0,
+    muted: false,
   },
 };
 
@@ -111,6 +117,19 @@ export class SaveManager {
     this.save(data);
   }
 
+  static hasMayoBlaster(): boolean {
+    return this.getPlayerState().hasMayoBlaster ?? false;
+  }
+
+  static collectMayoBlaster(): void {
+    const data = this.load();
+    if (!data.playerState) {
+      data.playerState = { ...DEFAULT_PLAYER_STATE };
+    }
+    data.playerState.hasMayoBlaster = true;
+    this.save(data);
+  }
+
   static collectFriend(friendId: string): void {
     const data = this.load();
     if (!data.playerState) {
@@ -133,5 +152,43 @@ export class SaveManager {
 
   static getMaxHealth(): number {
     return this.getPlayerState().baseMaxHealth;
+  }
+
+  // Info popup tracking methods
+  static hasShownInfoPopup(popupId: string): boolean {
+    const data = this.load();
+    return (data.shownInfoPopups || []).includes(popupId);
+  }
+
+  static markInfoPopupShown(popupId: string): void {
+    const data = this.load();
+    if (!data.shownInfoPopups) {
+      data.shownInfoPopups = [];
+    }
+    if (!data.shownInfoPopups.includes(popupId)) {
+      data.shownInfoPopups.push(popupId);
+      this.save(data);
+    }
+  }
+
+  // Sound settings methods
+  static isMuted(): boolean {
+    const data = this.load();
+    return data.settings?.muted ?? false;
+  }
+
+  static setMuted(muted: boolean): void {
+    const data = this.load();
+    if (!data.settings) {
+      data.settings = { musicVolume: 0.7, sfxVolume: 1.0, muted: false };
+    }
+    data.settings.muted = muted;
+    this.save(data);
+  }
+
+  static toggleMute(): boolean {
+    const newMuted = !this.isMuted();
+    this.setMuted(newMuted);
+    return newMuted;
   }
 }

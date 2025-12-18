@@ -2,6 +2,28 @@ import Phaser from 'phaser';
 
 type DrunkState = 'stumble' | 'bash' | 'vomit' | 'hit';
 
+// Drunk student quotes - slurred and tipsy!
+const DRUNK_QUOTES = [
+  "Mate... MATE!",
+  "You're my best friend!",
+  "I'm not even drunk!",
+  "*hic* ...what?",
+  "Let's get kebabs!",
+  "I love you, man!",
+  "One more shot!",
+  "Cheeky Nandos?",
+  "Wait... where am I?",
+  "This is MY song!",
+  "I'm gonna be sick...",
+  "YOU DON'T KNOW ME!",
+  "I'm fiiiine...",
+  "Did someone say pub?",
+  "Hold my drink!",
+  "*incoherent mumbling*",
+  "Best night EVER!",
+  "No, YOU'RE drunk!",
+];
+
 export class DrunkStudent extends Phaser.Physics.Arcade.Sprite {
   private patrolDistance: number;
   private startX: number;
@@ -16,6 +38,10 @@ export class DrunkStudent extends Phaser.Physics.Arcade.Sprite {
   private attackCooldown: number = 0;
   private variant: 'grey' | 'navy';
   private vomitProjectiles: Phaser.GameObjects.Sprite[] = [];
+  // Speech bubble properties
+  private speechBubble: Phaser.GameObjects.Graphics | null = null;
+  private speechText: Phaser.GameObjects.Text | null = null;
+  private speechCooldown: number = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number, patrolDistance: number = 60) {
     // Randomly choose variant
@@ -53,6 +79,11 @@ export class DrunkStudent extends Phaser.Physics.Arcade.Sprite {
     // Decrease attack cooldown
     if (this.attackCooldown > 0) {
       this.attackCooldown -= 16; // Assuming ~60fps
+    }
+
+    // Decrease speech cooldown
+    if (this.speechCooldown > 0) {
+      this.speechCooldown -= 16;
     }
 
     // Wobble timer for drunk movement
@@ -93,6 +124,20 @@ export class DrunkStudent extends Phaser.Physics.Arcade.Sprite {
 
     // Update vomit projectiles
     this.updateVomitProjectiles();
+
+    // Random drunk mumbling (frequent because they're drunk!)
+    if (Math.random() < 0.003 && this.speechCooldown <= 0 && this.drunkState === 'stumble') {
+      this.showSpeechBubble();
+    }
+
+    // Update speech bubble position if visible (wobble with the drunk)
+    if (this.speechBubble && this.speechText) {
+      this.speechBubble.setPosition(this.x, this.y - 35);
+      this.speechText.setPosition(this.x, this.y - 35);
+      // Wobble the speech bubble too!
+      this.speechBubble.setRotation(Math.sin(this.wobbleTimer * 2) * 0.05);
+      this.speechText.setRotation(Math.sin(this.wobbleTimer * 2) * 0.05);
+    }
 
     // Flip sprite based on direction
     this.setFlipX(this.direction < 0);
@@ -241,6 +286,139 @@ export class DrunkStudent extends Phaser.Physics.Arcade.Sprite {
     this.play(`drunk-${this.variant}-stumble`);
   }
 
+  private showSpeechBubble(): void {
+    // Don't show if one is already visible
+    if (this.speechBubble) return;
+
+    this.speechCooldown = 2500; // 2.5 second cooldown (drunk = talkative)
+
+    // Pick a random quote
+    const quote = DRUNK_QUOTES[Math.floor(Math.random() * DRUNK_QUOTES.length)];
+
+    // Calculate bubble dimensions
+    const padding = 6;
+    const fontSize = 7;
+    const maxWidth = 80;
+
+    // Create temp text to measure
+    const tempText = this.scene.add.text(0, 0, quote, {
+      fontSize: `${fontSize}px`,
+      fontFamily: 'monospace',
+      wordWrap: { width: maxWidth },
+    });
+    const textWidth = Math.min(tempText.width, maxWidth);
+    const textHeight = tempText.height;
+    tempText.destroy();
+
+    const bubbleWidth = textWidth + padding * 2;
+    const bubbleHeight = textHeight + padding * 2;
+
+    // Create speech bubble with a wobbly drunk style
+    this.speechBubble = this.scene.add.graphics();
+    this.speechBubble.setPosition(this.x, this.y - 35);
+    this.speechBubble.setDepth(100);
+
+    // Bubble background - slightly messy/drunk looking
+    this.speechBubble.fillStyle(0xffffff, 0.9);
+    this.speechBubble.fillRoundedRect(
+      -bubbleWidth / 2,
+      -bubbleHeight / 2,
+      bubbleWidth,
+      bubbleHeight,
+      4
+    );
+
+    // Wobbly border
+    this.speechBubble.lineStyle(1.5, 0x9b59b6, 1);
+    this.speechBubble.strokeRoundedRect(
+      -bubbleWidth / 2,
+      -bubbleHeight / 2,
+      bubbleWidth,
+      bubbleHeight,
+      4
+    );
+
+    // Pointer (slightly off-center for drunk effect)
+    this.speechBubble.fillStyle(0xffffff, 0.9);
+    this.speechBubble.fillTriangle(-3, bubbleHeight / 2, 5, bubbleHeight / 2, 1, bubbleHeight / 2 + 6);
+    this.speechBubble.lineStyle(1.5, 0x9b59b6, 1);
+    this.speechBubble.lineBetween(-3, bubbleHeight / 2, 1, bubbleHeight / 2 + 6);
+    this.speechBubble.lineBetween(5, bubbleHeight / 2, 1, bubbleHeight / 2 + 6);
+
+    // Create text
+    this.speechText = this.scene.add.text(this.x, this.y - 35, quote, {
+      fontSize: `${fontSize}px`,
+      color: '#4a235a',
+      fontFamily: 'monospace',
+      wordWrap: { width: maxWidth },
+      align: 'center',
+    });
+    this.speechText.setOrigin(0.5);
+    this.speechText.setDepth(101);
+
+    // Animate in with a drunk wobble
+    this.speechBubble.setAlpha(0);
+    this.speechBubble.setScale(0.3);
+    this.speechText.setAlpha(0);
+    this.speechText.setScale(0.3);
+
+    this.scene.tweens.add({
+      targets: [this.speechBubble, this.speechText],
+      alpha: 1,
+      scale: 1,
+      duration: 200,
+      ease: 'Back.easeOut',
+    });
+
+    // Fade out after a while
+    this.scene.time.delayedCall(2000, () => {
+      if (this.speechBubble && this.speechText) {
+        this.scene.tweens.add({
+          targets: [this.speechBubble, this.speechText],
+          alpha: 0,
+          scale: 0.5,
+          duration: 300,
+          onComplete: () => {
+            if (this.speechBubble) {
+              this.speechBubble.destroy();
+              this.speechBubble = null;
+            }
+            if (this.speechText) {
+              this.speechText.destroy();
+              this.speechText = null;
+            }
+          },
+        });
+      }
+    });
+
+    // Play a slurred mumble sound
+    this.playMumbleSound();
+  }
+
+  private playMumbleSound(): void {
+    const soundManager = this.scene.sound as Phaser.Sound.WebAudioSoundManager;
+    if (soundManager.context) {
+      const ctx = soundManager.context;
+      // Low mumble sound
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.type = 'sine';
+      // Random pitch for variety
+      osc.frequency.value = 120 + Math.random() * 40;
+
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.15);
+    }
+  }
+
   getVomitProjectiles(): Phaser.GameObjects.Sprite[] {
     return this.vomitProjectiles;
   }
@@ -249,6 +427,16 @@ export class DrunkStudent extends Phaser.Physics.Arcade.Sprite {
     if (!this.alive) return;
     this.alive = false;
     this.drunkState = 'hit';
+
+    // Clean up speech bubble
+    if (this.speechBubble) {
+      this.speechBubble.destroy();
+      this.speechBubble = null;
+    }
+    if (this.speechText) {
+      this.speechText.destroy();
+      this.speechText = null;
+    }
 
     // Play hurt animation
     this.play(`drunk-${this.variant}-hit`);
