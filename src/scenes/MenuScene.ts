@@ -30,6 +30,16 @@ export class MenuScene extends Phaser.Scene {
     // Reset camera to ensure clean state (fixes black screen issues from scene transitions)
     this.cameras.main.resetFX();
     this.cameras.main.setAlpha(1);
+    this.cameras.main.setVisible(true);
+    this.input.enabled = true;
+
+    // Stop any lingering scenes that might cause issues
+    if (this.scene.isActive(SCENES.GAME)) {
+      this.scene.stop(SCENES.GAME);
+    }
+    if (this.scene.isActive(SCENES.PAUSE)) {
+      this.scene.stop(SCENES.PAUSE);
+    }
 
     // Fade in from black
     this.cameras.main.fadeIn(500, 0, 0, 0);

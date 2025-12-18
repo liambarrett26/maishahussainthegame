@@ -194,13 +194,13 @@ export class CreditsScene extends Phaser.Scene {
     if (this.isTransitioning) return;
     this.isTransitioning = true;
 
-    // Disable further input
-    this.input.enabled = false;
-
     // Clean up keyboard listeners
     this.input.keyboard?.removeAllListeners();
 
-    // Just start menu - scene.start automatically handles stopping current scene
-    this.scene.start(SCENES.MENU);
+    // Fade out then start menu
+    this.cameras.main.fadeOut(300, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.scene.start(SCENES.MENU);
+    });
   }
 }

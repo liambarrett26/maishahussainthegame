@@ -587,8 +587,12 @@ export class HUD {
       this.menuOverlay = null;
     }
 
-    // Stop current game scene and start menu
-    this.scene.scene.stop(SCENES.GAME);
-    this.scene.scene.start(SCENES.MENU);
+    // Fade out then transition to menu
+    this.scene.cameras.main.fadeOut(300, 0, 0, 0);
+    this.scene.cameras.main.once('camerafadeoutcomplete', () => {
+      // Use game.scene for safer access
+      this.scene.game.scene.stop(SCENES.GAME);
+      this.scene.game.scene.start(SCENES.MENU);
+    });
   }
 }

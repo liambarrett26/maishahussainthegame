@@ -133,9 +133,13 @@ export class PauseScene extends Phaser.Scene {
   }
 
   private quitToMenu(): void {
-    // Use game.scene to ensure proper scene management from overlay
-    this.game.scene.stop(SCENES.PAUSE);
-    this.game.scene.stop(SCENES.GAME);
-    this.game.scene.start(SCENES.MENU);
+    // Fade out then transition to menu
+    this.cameras.main.fadeOut(300, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      // Use game.scene to ensure proper scene management from overlay
+      this.game.scene.stop(SCENES.PAUSE);
+      this.game.scene.stop(SCENES.GAME);
+      this.game.scene.start(SCENES.MENU);
+    });
   }
 }
